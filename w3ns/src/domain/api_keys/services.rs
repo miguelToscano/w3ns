@@ -10,6 +10,12 @@ pub fn create(api_key: &ApiKey) -> Result<(), ()> {
     })
 }
 
+pub fn delete(owner: &Principal) -> Result<(), ()> {
+    ic::with_mut(|api_keys_repository: &mut ApiKeys| {
+        api_keys_repository.delete(owner)
+    })
+}
+
 pub fn get_all() -> Vec<ApiKey> {
     ic::with(|api_keys_repository: &ApiKeys| {
         api_keys_repository.get_all()

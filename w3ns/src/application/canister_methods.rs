@@ -30,14 +30,15 @@ pub fn register_key(key: String) -> Result<(), ()> {
 #[candid_method(update)]
 pub fn remove_key() -> Result<(), ()> {
     let caller = ic::caller();
-    return Ok(());
+    api_keys_service::delete(&caller)
 }
 
 #[query]
 #[candid_method(query)]
 pub fn has_key_registered() -> bool {
     let caller = ic::caller();
-    return true;
+    let api_key = api_keys_service::get(&caller);
+    api_key.is_some()
 }
 
 #[query]
