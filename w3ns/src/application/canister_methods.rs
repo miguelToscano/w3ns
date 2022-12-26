@@ -1,10 +1,10 @@
 use candid::Principal;
 use ic_kit::candid::{candid_method, export_service};
-use ic_kit::macros::*;
 use ic_kit::ic;
+use ic_kit::macros::*;
 
-use crate::domain::api_keys::types::{ApiKey};
 use crate::domain::api_keys::services as api_keys_service;
+use crate::domain::api_keys::types::ApiKey;
 // use ic_kit::*;
 
 #[query]
@@ -17,11 +17,11 @@ pub fn name() -> String {
 #[candid_method(update)]
 pub fn register_key(key: String) -> Result<(), ()> {
     let caller = ic::caller();
-        let api_key = ApiKey {
-            value: key.clone(),
-            owner: caller.clone(),
-            created_at: ic::time(),
-        };
+    let api_key = ApiKey {
+        value: key.clone(),
+        owner: caller.clone(),
+        created_at: ic::time(),
+    };
 
     api_keys_service::create(&api_key)
 }

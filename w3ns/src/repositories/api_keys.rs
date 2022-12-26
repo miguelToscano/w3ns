@@ -1,6 +1,6 @@
-use std::collections::HashMap;
-use ic_kit::candid::Principal;
 use crate::domain::api_keys::types::ApiKey;
+use ic_kit::candid::Principal;
+use std::collections::HashMap;
 
 #[derive(Default)]
 pub struct ApiKeys(HashMap<Principal, ApiKey>);
