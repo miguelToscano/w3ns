@@ -1,0 +1,25 @@
+{
+    "version": 1,
+    "dfx": "0.12.1",
+    "canisters": {
+      "w3ns": {
+        "build": "node build.js w3ns",
+        "type": "custom",
+        "package": "w3ns",
+        "candid": "candid/w3ns.did",
+        "wasm": "target/wasm32-unknown-unknown/release/w3ns-opt.wasm"
+      }
+    },
+    "defaults": {
+      "build": {
+        "packtool": "",
+        "args": ""
+      }
+    },
+    "networks": {
+      "local": {
+        "bind": "127.0.0.1:4000",
+        "type": "ephemeral"
+      }
+    }
+  }
