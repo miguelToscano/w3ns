@@ -1,10 +1,18 @@
+type ApiError = variant {
+  ApiKeyNotFound;
+  ApiKeyAlreadyExists;
+  InvalidApiKey;
+  InternalError;
+};
 type ApiKey = record { value : text; owner : principal; created_at : nat64 };
 type Result = variant { Ok; Err };
+type Result_1 = variant { Ok; Err : ApiError };
 service : {
   get_all : () -> (vec ApiKey) query;
   has_key_registered : () -> (bool) query;
   name : () -> (text) query;
   register_key : (text) -> (Result);
   remove_key : () -> (Result);
+  send_email : () -> (Result_1);
   whoami : () -> (principal) query;
 }

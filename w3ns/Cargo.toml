@@ -11,8 +11,8 @@ path = "src/lib.rs"
 
 [dependencies]
 candid = "0.7.4"
-ic-cdk = "0.5.1"
-ic-cdk-macros = "0.5.1"
+ic-cdk = "0.6.5"
+ic-cdk-macros = "0.6.5"
 serde = "1.0.116"
 serde_bytes = "0.11.5"
 ic-kit = "0.4.8"
