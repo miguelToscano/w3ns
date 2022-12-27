@@ -1,5 +1,8 @@
-use candid::{Principal, CandidType};
-use ic_cdk::api::management_canister::http_request::{self, http_request, HttpHeader, CanisterHttpRequestArgument, HttpMethod, HttpResponse, TransformArgs, TransformContext};
+use candid::{CandidType, Principal};
+use ic_cdk::api::management_canister::http_request::{
+    self, http_request, CanisterHttpRequestArgument, HttpHeader, HttpMethod, HttpResponse,
+    TransformArgs, TransformContext,
+};
 use ic_kit::candid::{candid_method, export_service};
 use ic_kit::ic;
 use ic_kit::macros::*;
@@ -56,10 +59,11 @@ pub async fn send_email() -> Result<(), ApiError> {
         HttpHeader {
             name: "Idempotency-Key".to_owned(),
             value: idempotency_key,
-        }
+        },
     ];
 
-    let body = String::from("{
+    let body = String::from(
+        "{
       \"message\": {
         \"to\": {\"email\":\"miguetoscano288@gmail.com\"},
         \"content\": {
@@ -68,7 +72,8 @@ pub async fn send_email() -> Result<(), ApiError> {
         },
         \"data\": {\"joke\": \"How did the T-Rex feel after a set of bicep curls? Dino-sore!\"}
         }
-    }");
+    }",
+    );
 
     ic::print("Antes de armar el argument");
 
@@ -87,8 +92,12 @@ pub async fn send_email() -> Result<(), ApiError> {
     ic::print(format!("{:?}", request));
 
     match http_request(request).await {
-        Ok((response,)) => { println!("Ok") },
-        Err((r, m)) => { println!("Error") },
+        Ok((response,)) => {
+            println!("Ok")
+        }
+        Err((r, m)) => {
+            println!("Error")
+        }
     };
 
     Ok(())
