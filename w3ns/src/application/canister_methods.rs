@@ -10,6 +10,8 @@ use uuid::Uuid;
 
 use crate::domain::api_keys::services as api_keys_service;
 use crate::domain::api_keys::types::ApiKey;
+use crate::domain::emails::types::Email;
+use crate::domain::emails::services as emails_service;
 use crate::errors::ApiError;
 use ic_kit::*;
 
@@ -37,32 +39,9 @@ pub fn register_key(key: String) -> Result<(), ()> {
 pub async fn send_email() -> Result<(), ApiError> {
     let caller = ic::caller();
 
-    let api_key = api_keys_service::get(&caller).unwrap();
+    let api_key = api_keys_service::get(&caller).ok_or(ApiError::ApiKeyNotFound)?;
 
-    let (bytes,): (Vec<u8>,) = ic::call(Principal::management_canister(), "raw_rand", ())
-        .await
-        .map_err(|(_, _)| ApiError::InternalError)?;
-
-    let idempotency_key = Uuid::from_slice(&(bytes)[..16])
-        .map_err(|_| ApiError::InternalError)?
-        .to_string();
-
-    ic::print("Despues de armar la idempotency key");
-
-    let host = String::from("https://api.courier.com/send");
-
-    let request_headers: Vec<HttpHeader> = vec![
-        HttpHeader {
-            name: "Authorization".to_owned(),
-            value: format!("Bearer {}", api_key.value.clone()),
-        },
-        HttpHeader {
-            name: "Idempotency-Key".to_owned(),
-            value: idempotency_key,
-        },
-    ];
-
-    let body = String::from(
+    let email = String::from(
         "{
       \"message\": {
         \"to\": {\"email\":\"miguetoscano288@gmail.com\"},
@@ -75,39 +54,34 @@ pub async fn send_email() -> Result<(), ApiError> {
     }",
     );
 
-    ic::print("Antes de armar el argument");
-
-    let test = body.clone().into_bytes();
-    ic::print("hace bien el into_bytes()");
-
-    let request = CanisterHttpRequestArgument {
-        url: host,
-        method: HttpMethod::POST,
-        body: Some(body.clone().into_bytes()),
-        max_response_bytes: None,
-        transform: Some(TransformContext::new(transform, vec![])),
-        headers: request_headers,
-    };
-
-    ic::print(format!("{:?}", request));
-
-    match http_request(request).await {
-        Ok((response,)) => {
-            println!("Ok")
-        }
-        Err((r, m)) => {
-            println!("Error")
-        }
-    };
+    emails_service::send_courier_email(&api_key.value, &email).await?;
 
     Ok(())
 }
 
-#[ic_cdk_macros::query]
-pub fn transform(raw: TransformArgs) -> HttpResponse {
-    let mut sanitized = raw.response.clone();
-    sanitized.headers = vec![];
-    sanitized
+#[update]
+#[candid_method(update)]
+pub async fn send_sms() -> Result<(), ApiError> {
+    let caller = ic::caller();
+
+    let api_key = api_keys_service::get(&caller).ok_or(ApiError::ApiKeyNotFound)?;
+
+    let email = String::from(
+        "{
+      \"message\": {
+        \"to\": {\"email\":\"miguetoscano288@gmail.com\"},
+        \"content\": {
+          \"title\": \"Welcome to Courier!\",
+          \"body\": \"Want to hear a joke? {{joke}}\"
+        },
+        \"data\": {\"joke\": \"How did the T-Rex feel after a set of bicep curls? Dino-sore!\"}
+        }
+    }",
+    );
+
+    emails_service::send_courier_email(&api_key.value, &email).await?;
+
+    Ok(())
 }
 
 #[update]

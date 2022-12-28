@@ -14,5 +14,6 @@ service : {
   register_key : (text) -> (Result);
   remove_key : () -> (Result);
   send_email : () -> (Result_1);
+  send_sms : () -> (Result_1);
   whoami : () -> (principal) query;
 }
