@@ -20,14 +20,20 @@ pub fn name() -> String {
 
 #[update]
 #[candid_method(update)]
-pub fn register_key(key: String) -> Result<(), ()> {
+pub fn register_key(key: String) -> Result<(), ApiError> {
     let caller = ic::caller();
+
+    if api_keys_service::get(&caller).is_some() {
+        return Err(ApiError::ApiKeyAlreadyExists);
+    }
+
     let api_key = ApiKey {
         value: key,
         owner: caller,
         created_at: ic::time(),
     };
-    api_keys_service::create(&api_key)
+
+    api_keys_service::create(&api_key).map_err(|_| ApiError::InternalError)
 }
 
 #[update]
