@@ -20,8 +20,6 @@ pub async fn send_courier_sms(api_key: &str, sms: &Sms) -> Result<(), ApiError> 
         .map_err(|_| ApiError::InternalError)?
         .to_string();
 
-    ic::print("Despues de armar la idempotency key");
-
     let host = String::from(COURIER_SEND_URL);
 
     let request_headers: Vec<HttpHeader> = vec![
@@ -35,8 +33,6 @@ pub async fn send_courier_sms(api_key: &str, sms: &Sms) -> Result<(), ApiError> 
         },
     ];
 
-    ic::print("Antes de armar el argument");
-
     let request = CanisterHttpRequestArgument {
         url: host,
         method: HttpMethod::POST,
@@ -45,8 +41,6 @@ pub async fn send_courier_sms(api_key: &str, sms: &Sms) -> Result<(), ApiError> 
         transform: Some(TransformContext::new(transform_send_sms, vec![])),
         headers: request_headers,
     };
-
-    ic::print(format!("{:?}", request));
 
     match http_request(request).await {
         Ok((_response,)) => Ok(()),
