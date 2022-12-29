@@ -11,7 +11,9 @@ use uuid::Uuid;
 use crate::domain::api_keys::services as api_keys_service;
 use crate::domain::api_keys::types::ApiKey;
 use crate::domain::emails::types::Email;
+use crate::domain::sms::types::Sms;
 use crate::domain::emails::services as emails_service;
+use crate::domain::sms::{services as sms_service, self};
 use crate::errors::ApiError;
 use ic_kit::*;
 
@@ -61,27 +63,17 @@ pub async fn send_email() -> Result<(), ApiError> {
 
 #[update]
 #[candid_method(update)]
-pub async fn send_sms() -> Result<(), ApiError> {
+pub async fn send_sms(to: String, message: String) -> Result<(), ApiError> {
     let caller = ic::caller();
 
     let api_key = api_keys_service::get(&caller).ok_or(ApiError::ApiKeyNotFound)?;
 
-    let email = String::from(
-        "{
-      \"message\": {
-        \"to\": {\"email\":\"miguetoscano288@gmail.com\"},
-        \"content\": {
-          \"title\": \"Welcome to Courier!\",
-          \"body\": \"Want to hear a joke? {{joke}}\"
-        },
-        \"data\": {\"joke\": \"How did the T-Rex feel after a set of bicep curls? Dino-sore!\"}
-        }
-    }",
-    );
+    let sms = Sms {
+        to,
+        message
+    };
 
-    emails_service::send_courier_email(&api_key.value, &email).await?;
-
-    Ok(())
+    sms_service::send_courier_sms(&api_key.value, &sms).await
 }
 
 #[update]
