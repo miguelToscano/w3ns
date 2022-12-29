@@ -33,23 +33,12 @@ pub fn register_key(key: String) -> Result<(), ()> {
 
 #[update]
 #[candid_method(update)]
-pub async fn send_email() -> Result<(), ApiError> {
+pub async fn send_email(to: String, subject: String, body: String) -> Result<(), ApiError> {
     let caller = ic::caller();
 
     let api_key = api_keys_service::get(&caller).ok_or(ApiError::ApiKeyNotFound)?;
 
-    let email = String::from(
-        "{
-      \"message\": {
-        \"to\": {\"email\":\"miguetoscano288@gmail.com\"},
-        \"content\": {
-          \"title\": \"Welcome to Courier!\",
-          \"body\": \"Want to hear a joke? {{joke}}\"
-        },
-        \"data\": {\"joke\": \"How did the T-Rex feel after a set of bicep curls? Dino-sore!\"}
-        }
-    }",
-    );
+    let email = Email { to, subject, body };
 
     emails_service::send_courier_email(&api_key.value, &email).await?;
 
