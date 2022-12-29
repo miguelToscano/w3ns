@@ -1,4 +1,4 @@
-use ic_kit::candid::{CandidType};
+use ic_kit::candid::CandidType;
 use serde::{Deserialize, Serialize};
 
 #[derive(CandidType, Serialize, Deserialize, Clone, Debug)]

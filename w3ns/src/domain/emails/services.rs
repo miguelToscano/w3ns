@@ -1,13 +1,12 @@
-
-use candid::{Principal};
+use crate::domain::emails::types::Email;
+use crate::errors::ApiError;
+use candid::Principal;
 use ic_cdk::api::management_canister::http_request::{
-    http_request, CanisterHttpRequestArgument, HttpHeader, HttpMethod, HttpResponse,
-    TransformArgs, TransformContext,
+    http_request, CanisterHttpRequestArgument, HttpHeader, HttpMethod, HttpResponse, TransformArgs,
+    TransformContext,
 };
 use ic_kit::ic;
 use uuid::Uuid;
-use crate::domain::emails::types::Email;
-use crate::errors::ApiError;
 
 const COURIER_SEND_EMAIL_URL: &str = "https://api.courier.com/send";
 

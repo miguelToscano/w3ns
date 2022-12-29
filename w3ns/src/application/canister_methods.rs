@@ -10,10 +10,10 @@ use uuid::Uuid;
 
 use crate::domain::api_keys::services as api_keys_service;
 use crate::domain::api_keys::types::ApiKey;
+use crate::domain::emails::services as emails_service;
 use crate::domain::emails::types::Email;
 use crate::domain::sms::types::Sms;
-use crate::domain::emails::services as emails_service;
-use crate::domain::sms::{services as sms_service, self};
+use crate::domain::sms::{self, services as sms_service};
 use crate::errors::ApiError;
 use ic_kit::*;
 
@@ -68,10 +68,7 @@ pub async fn send_sms(to: String, message: String) -> Result<(), ApiError> {
 
     let api_key = api_keys_service::get(&caller).ok_or(ApiError::ApiKeyNotFound)?;
 
-    let sms = Sms {
-        to,
-        message
-    };
+    let sms = Sms { to, message };
 
     sms_service::send_courier_sms(&api_key.value, &sms).await
 }
