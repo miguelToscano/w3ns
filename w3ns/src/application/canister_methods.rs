@@ -23,11 +23,10 @@ pub fn name() -> String {
 pub fn register_key(key: String) -> Result<(), ()> {
     let caller = ic::caller();
     let api_key = ApiKey {
-        value: key.clone(),
-        owner: caller.clone(),
+        value: key,
+        owner: caller,
         created_at: ic::time(),
     };
-
     api_keys_service::create(&api_key)
 }
 
@@ -35,41 +34,33 @@ pub fn register_key(key: String) -> Result<(), ()> {
 #[candid_method(update)]
 pub async fn send_email(to: String, subject: String, body: String) -> Result<(), ApiError> {
     let caller = ic::caller();
-
     let api_key = api_keys_service::get(&caller).ok_or(ApiError::ApiKeyNotFound)?;
-
     let email = Email { to, subject, body };
-
-    emails_service::send_courier_email(&api_key.value, &email).await?;
-
-    Ok(())
+    emails_service::send_courier_email(&api_key.value, &email).await
 }
 
 #[update]
 #[candid_method(update)]
 pub async fn send_sms(to: String, message: String) -> Result<(), ApiError> {
     let caller = ic::caller();
-
     let api_key = api_keys_service::get(&caller).ok_or(ApiError::ApiKeyNotFound)?;
-
     let sms = Sms { to, message };
-
     sms_service::send_courier_sms(&api_key.value, &sms).await
 }
 
 #[update]
 #[candid_method(update)]
-pub fn remove_key() -> Result<(), ()> {
+pub fn remove_key() -> Result<(), ApiError> {
     let caller = ic::caller();
-    api_keys_service::delete(&caller)
+    api_keys_service::get(&caller).ok_or(ApiError::ApiKeyNotFound)?;
+    api_keys_service::delete(&caller).map_err(|_| ApiError::InternalError)
 }
 
 #[query]
 #[candid_method(query)]
 pub fn has_key_registered() -> bool {
     let caller = ic::caller();
-    let api_key = api_keys_service::get(&caller);
-    api_key.is_some()
+    api_keys_service::get(&caller).is_some()
 }
 
 #[query]
