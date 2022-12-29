@@ -1,4 +1,3 @@
-use crate::domain::emails::types::Email;
 use crate::errors::ApiError;
 use candid::Principal;
 use ic_cdk::api::management_canister::http_request::{

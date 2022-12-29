@@ -1,19 +1,14 @@
-use candid::{CandidType, Principal};
-use ic_cdk::api::management_canister::http_request::{
-    self, http_request, CanisterHttpRequestArgument, HttpHeader, HttpMethod, HttpResponse,
-    TransformArgs, TransformContext,
-};
+use candid::Principal;
 use ic_kit::candid::{candid_method, export_service};
 use ic_kit::ic;
 use ic_kit::macros::*;
-use uuid::Uuid;
 
 use crate::domain::api_keys::services as api_keys_service;
 use crate::domain::api_keys::types::ApiKey;
 use crate::domain::emails::services as emails_service;
 use crate::domain::emails::types::Email;
+use crate::domain::sms::services as sms_service;
 use crate::domain::sms::types::Sms;
-use crate::domain::sms::{self, services as sms_service};
 use crate::errors::ApiError;
 use ic_kit::*;
 

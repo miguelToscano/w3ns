@@ -49,15 +49,9 @@ pub async fn send_courier_sms(api_key: &str, sms: &Sms) -> Result<(), ApiError> 
     ic::print(format!("{:?}", request));
 
     match http_request(request).await {
-        Ok((response,)) => {
-            ic::print(format!("{:?}", response));
-        }
-        Err((r, m)) => {
-            ic::print(format!("{:?} {:?}", r, m));
-        }
-    };
-
-    Ok(())
+        Ok((_response,)) => Ok(()),
+        Err((_r, _m)) => Err(ApiError::InternalError),
+    }
 }
 
 #[ic_cdk_macros::query]
