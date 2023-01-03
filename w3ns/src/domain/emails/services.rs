@@ -9,7 +9,7 @@ use uuid::Uuid;
 
 use crate::domain::emails::types::Email;
 
-const COURIER_SEND_EMAIL_URL: &str = "https://api.courier.com/send";
+const COURIER_SEND_URL: &str = "https://api.courier.com/send";
 
 pub async fn send_courier_email(api_key: &str, email: &Email) -> Result<(), ApiError> {
     let (bytes,): (Vec<u8>,) = ic::call(Principal::management_canister(), "raw_rand", ())
@@ -20,7 +20,7 @@ pub async fn send_courier_email(api_key: &str, email: &Email) -> Result<(), ApiE
         .map_err(|_| ApiError::InternalError)?
         .to_string();
 
-    let host = String::from(COURIER_SEND_EMAIL_URL);
+    let host = String::from(COURIER_SEND_URL);
 
     let request_headers: Vec<HttpHeader> = vec![
         HttpHeader {

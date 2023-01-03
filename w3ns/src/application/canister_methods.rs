@@ -56,7 +56,7 @@ pub async fn send_sms(to: String, message: String) -> Result<(), ApiError> {
 
 #[update]
 #[candid_method(update)]
-pub async fn send_push_notification() -> Result<(), ApiError> {
+pub async fn send_push_notification(firebase_token: String, title: String, body: String) -> Result<(), ApiError> {
     let caller = ic::caller();
     let api_key = api_keys_service::get(&caller).ok_or(ApiError::ApiKeyNotFound)?;
     Ok(())
