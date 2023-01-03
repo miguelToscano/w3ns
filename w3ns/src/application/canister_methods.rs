@@ -75,7 +75,7 @@ pub fn remove_key() -> Result<(), ApiError> {
 pub fn has_key_registered() -> bool {
     let caller = ic::caller();
     api_keys_service::get(&caller).is_some()
-} 
+}
 
 #[query]
 #[candid_method(query)]
@@ -110,4 +110,3 @@ mod tests {
         write(dir.join("w3ns.did"), export_candid()).expect("Write failed.");
     }
 }
-                         
