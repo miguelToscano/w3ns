@@ -11,7 +11,10 @@ use crate::domain::push_notifications::types::PushNotification;
 
 const COURIER_SEND_URL: &str = "https://api.courier.com/send";
 
-pub async fn send_courier_push_notification(api_key: &str, push_notification: &PushNotification) -> Result<(), ApiError> {
+pub async fn send_courier_push_notification(
+    api_key: &str,
+    push_notification: &PushNotification,
+) -> Result<(), ApiError> {
     let (bytes,): (Vec<u8>,) = ic::call(Principal::management_canister(), "raw_rand", ())
         .await
         .map_err(|(_, _)| ApiError::InternalError)?;
@@ -38,7 +41,10 @@ pub async fn send_courier_push_notification(api_key: &str, push_notification: &P
         method: HttpMethod::POST,
         body: Some(push_notification.to_courier_format().into_bytes()),
         max_response_bytes: None,
-        transform: Some(TransformContext::new(transform_send_push_notification, vec![])),
+        transform: Some(TransformContext::new(
+            transform_send_push_notification,
+            vec![],
+        )),
         headers: request_headers,
     };
 
