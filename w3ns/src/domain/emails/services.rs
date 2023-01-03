@@ -25,7 +25,7 @@ pub async fn send_courier_email(api_key: &str, email: &Email) -> Result<(), ApiE
     let request_headers: Vec<HttpHeader> = vec![
         HttpHeader {
             name: "Authorization".to_owned(),
-            value: format!("Bearer {}", api_key.clone()),
+            value: format!("Bearer {}", api_key),
         },
         HttpHeader {
             name: "Idempotency-Key".to_owned(),
@@ -50,7 +50,7 @@ pub async fn send_courier_email(api_key: &str, email: &Email) -> Result<(), ApiE
 
 #[ic_cdk_macros::query]
 pub fn transform_send_email(raw: TransformArgs) -> HttpResponse {
-    let mut sanitized = raw.response.clone();
+    let mut sanitized = raw.response;
     sanitized.headers = vec![];
     sanitized
 }

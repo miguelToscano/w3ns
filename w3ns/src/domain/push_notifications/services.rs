@@ -28,7 +28,7 @@ pub async fn send_courier_push_notification(
     let request_headers: Vec<HttpHeader> = vec![
         HttpHeader {
             name: "Authorization".to_owned(),
-            value: format!("Bearer {}", api_key.clone()),
+            value: format!("Bearer {}", api_key),
         },
         HttpHeader {
             name: "Idempotency-Key".to_owned(),
@@ -56,7 +56,7 @@ pub async fn send_courier_push_notification(
 
 #[ic_cdk_macros::query]
 pub fn transform_send_push_notification(raw: TransformArgs) -> HttpResponse {
-    let mut sanitized = raw.response.clone();
+    let mut sanitized = raw.response;
     sanitized.headers = vec![];
     sanitized
 }

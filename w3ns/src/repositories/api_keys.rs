@@ -17,13 +17,12 @@ impl ApiKeys {
 
     pub fn create(&mut self, api_key: &ApiKey) -> Result<(), ()> {
         self.0.insert(api_key.clone().owner, api_key.clone());
-
-        return Ok(());
+        Ok(())
     }
 
     pub fn delete(&mut self, owner: &Principal) -> Result<(), ()> {
         self.0.remove(owner);
-        return Ok(());
+        Ok(())
     }
 
     pub fn get(&self, owner: &Principal) -> Option<ApiKey> {
@@ -31,6 +30,6 @@ impl ApiKeys {
     }
 
     pub fn get_all(&self) -> Vec<ApiKey> {
-        return self.0.clone().into_values().collect();
+        self.0.clone().into_values().collect()
     }
 }
