@@ -56,6 +56,14 @@ pub async fn send_sms(to: String, message: String) -> Result<(), ApiError> {
 
 #[update]
 #[candid_method(update)]
+pub async fn send_push_notification() -> Result<(), ApiError> {
+    let caller = ic::caller();
+    let api_key = api_keys_service::get(&caller).ok_or(ApiError::ApiKeyNotFound)?;
+    Ok(())
+}
+
+#[update]
+#[candid_method(update)]
 pub fn remove_key() -> Result<(), ApiError> {
     let caller = ic::caller();
     api_keys_service::get(&caller).ok_or(ApiError::ApiKeyNotFound)?;
@@ -67,7 +75,7 @@ pub fn remove_key() -> Result<(), ApiError> {
 pub fn has_key_registered() -> bool {
     let caller = ic::caller();
     api_keys_service::get(&caller).is_some()
-}
+} 
 
 #[query]
 #[candid_method(query)]
@@ -102,3 +110,4 @@ mod tests {
         write(dir.join("w3ns.did"), export_candid()).expect("Write failed.");
     }
 }
+                         
