@@ -1,16 +1,24 @@
 use candid::Principal;
 use ic_kit::ic;
 
-use crate::errors::ApiError;
 use crate::domain::api_keys::types::ApiKey;
+use crate::errors::ApiError;
 use crate::repositories::api_keys::ApiKeys;
 
 pub fn create(api_key: &ApiKey) -> Result<(), ApiError> {
-    ic::with_mut(|api_keys_repository: &mut ApiKeys| api_keys_repository.create(api_key).map_err(|_| ApiError::InternalError))
+    ic::with_mut(|api_keys_repository: &mut ApiKeys| {
+        api_keys_repository
+            .create(api_key)
+            .map_err(|_| ApiError::InternalError)
+    })
 }
 
 pub fn delete(owner: &Principal) -> Result<(), ApiError> {
-    ic::with_mut(|api_keys_repository: &mut ApiKeys| api_keys_repository.delete(owner).map_err(|_| ApiError::InternalError))
+    ic::with_mut(|api_keys_repository: &mut ApiKeys| {
+        api_keys_repository
+            .delete(owner)
+            .map_err(|_| ApiError::InternalError)
+    })
 }
 
 pub fn get_all() -> Vec<ApiKey> {
