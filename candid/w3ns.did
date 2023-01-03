@@ -13,6 +13,7 @@ service : {
   register_key : (text) -> (Result);
   remove_key : () -> (Result);
   send_email : (text, text, text) -> (Result);
+  send_push_notification : () -> (Result);
   send_sms : (text, text) -> (Result);
   whoami : () -> (principal) query;
 }
