@@ -2,6 +2,7 @@ use candid::Principal;
 use ic_kit::candid::{candid_method, export_service};
 use ic_kit::ic;
 use ic_kit::macros::*;
+use ic_kit::*;
 
 use crate::domain::api_keys::services as api_keys_service;
 use crate::domain::api_keys::types::ApiKey;
@@ -12,7 +13,6 @@ use crate::domain::push_notifications::types::PushNotification;
 use crate::domain::sms::services as sms_service;
 use crate::domain::sms::types::Sms;
 use crate::errors::ApiError;
-use ic_kit::*;
 
 #[query]
 #[candid_method(query)]
