@@ -76,6 +76,40 @@ pub async fn send_push_notification(
 
 #[update]
 #[candid_method(update)]
+pub async fn send_push_to_topic(
+    title: String,
+    body: String,
+    topic: String,
+) -> Result<(), ApiError> {
+    let caller = ic::caller();
+    let api_key = api_keys_service::get(&caller).ok_or(ApiError::ApiKeyNotFound)?;
+    Ok(())
+}
+
+#[update]
+#[candid_method(update)]
+pub async fn subscribe_users_to_topic(
+    registration_tokens: Vec<String>,
+    topic: String,
+) -> Result<(), ApiError> {
+    let caller = ic::caller();
+    let api_key = api_keys_service::get(&caller).ok_or(ApiError::ApiKeyNotFound)?;
+    Ok(())
+}
+
+#[update]
+#[candid_method(update)]
+pub async fn unsubscribe_users_from_topic(
+    registration_tokens: Vec<String>,
+    topic: String,
+) -> Result<(), ApiError> {
+    let caller = ic::caller();
+    let api_key = api_keys_service::get(&caller).ok_or(ApiError::ApiKeyNotFound)?;
+    Ok(())
+}
+
+#[update]
+#[candid_method(update)]
 pub fn remove_key() -> Result<(), ApiError> {
     let caller = ic::caller();
     api_keys_service::get(&caller).ok_or(ApiError::ApiKeyNotFound)?;
