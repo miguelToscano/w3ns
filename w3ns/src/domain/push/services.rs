@@ -11,10 +11,7 @@ use crate::domain::push::types::Push;
 
 const COURIER_SEND_URL: &str = "https://api.courier.com/send";
 
-pub async fn send_courier_push(
-    api_key: &str,
-    push_notification: &Push,
-) -> Result<(), ApiError> {
+pub async fn send_courier_push(api_key: &str, push_notification: &Push) -> Result<(), ApiError> {
     let (bytes,): (Vec<u8>,) = ic::call(Principal::management_canister(), "raw_rand", ())
         .await
         .map_err(|(_, _)| ApiError::InternalError)?;
@@ -41,10 +38,7 @@ pub async fn send_courier_push(
         method: HttpMethod::POST,
         body: Some(push_notification.to_courier_format().into_bytes()),
         max_response_bytes: None,
-        transform: Some(TransformContext::new(
-            transform_send_push,
-            vec![],
-        )),
+        transform: Some(TransformContext::new(transform_send_push, vec![])),
         headers: request_headers,
     };
 

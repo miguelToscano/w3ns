@@ -70,8 +70,7 @@ pub async fn send_push_notification(
         title,
         body,
     };
-    push_service::send_courier_push(&api_key.value, &push_notification)
-        .await
+    push_service::send_courier_push(&api_key.value, &push_notification).await
 }
 
 #[update]
