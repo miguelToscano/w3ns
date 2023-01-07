@@ -10,6 +10,6 @@ pub struct PushNotification {
 
 impl PushNotification {
     pub fn to_courier_format(&self) -> String {
-        format!("{{ \"message\": {{ \"to\": {{\"firebaseToken\":\"{}\"}},  \"providers\": {{ \"firebase-fcm\": {{ \"override\": {{ \"body\": {{ \"notification\": {{ \"title\": \"{}\", \"body\": \"{}\" }} }} }} }} }} }}", self.firebase_token, self.title, self.body)
+        format!("{{ \"message\": {{ \"to\": {{\"firebaseToken\":\"{}\"}}, \"content\": {{ \"title\": \"{}\", \"body\": \"{}\" }} }} }}", self.firebase_token, self.title, self.body)
     }
 }
