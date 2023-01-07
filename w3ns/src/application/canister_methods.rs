@@ -8,8 +8,8 @@ use crate::domain::api_keys::services as api_keys_service;
 use crate::domain::api_keys::types::ApiKey;
 use crate::domain::emails::services as emails_service;
 use crate::domain::emails::types::Email;
-use crate::domain::push_notifications::services as push_notifications_service;
-use crate::domain::push_notifications::types::PushNotification;
+use crate::domain::push::services as push_service;
+use crate::domain::push::types::Push;
 use crate::domain::sms::services as sms_service;
 use crate::domain::sms::types::Sms;
 use crate::errors::ApiError;
@@ -65,12 +65,12 @@ pub async fn send_push_notification(
 ) -> Result<(), ApiError> {
     let caller = ic::caller();
     let api_key = api_keys_service::get(&caller).ok_or(ApiError::ApiKeyNotFound)?;
-    let push_notification = PushNotification {
+    let push_notification = Push {
         firebase_token,
         title,
         body,
     };
-    push_notifications_service::send_courier_push_notification(&api_key.value, &push_notification)
+    push_service::send_courier_push(&api_key.value, &push_notification)
         .await
 }
 

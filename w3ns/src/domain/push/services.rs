@@ -7,13 +7,13 @@ use ic_cdk::api::management_canister::http_request::{
 use ic_kit::ic;
 use uuid::Uuid;
 
-use crate::domain::push_notifications::types::PushNotification;
+use crate::domain::push::types::Push;
 
 const COURIER_SEND_URL: &str = "https://api.courier.com/send";
 
-pub async fn send_courier_push_notification(
+pub async fn send_courier_push(
     api_key: &str,
-    push_notification: &PushNotification,
+    push_notification: &Push,
 ) -> Result<(), ApiError> {
     let (bytes,): (Vec<u8>,) = ic::call(Principal::management_canister(), "raw_rand", ())
         .await
@@ -42,7 +42,7 @@ pub async fn send_courier_push_notification(
         body: Some(push_notification.to_courier_format().into_bytes()),
         max_response_bytes: None,
         transform: Some(TransformContext::new(
-            transform_send_push_notification,
+            transform_send_push,
             vec![],
         )),
         headers: request_headers,
@@ -55,7 +55,7 @@ pub async fn send_courier_push_notification(
 }
 
 #[ic_cdk_macros::query]
-pub fn transform_send_push_notification(raw: TransformArgs) -> HttpResponse {
+pub fn transform_send_push(raw: TransformArgs) -> HttpResponse {
     let mut sanitized = raw.response;
     sanitized.headers = vec![];
     sanitized
