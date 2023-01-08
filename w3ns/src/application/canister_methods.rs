@@ -84,17 +84,24 @@ pub fn get_topics() -> Vec<Topic> {
 
 #[update]
 #[candid_method(update)]
-pub fn create_topic(name: String) -> Result<(), ApiError> {
+pub fn create_topic(topic_name: String) -> Result<(), ApiError> {
     let caller = ic::caller();
 
     let topic = Topic {
-        name,
+        name: topic_name,
         owner: caller.clone(),
         subscribers: vec![],
         created_at: ic::time(),
     };
 
     topics_service::create_topic(&caller, &topic)
+}
+
+#[update]
+#[candid_method(update)]
+pub fn delete_topic(topic_name: String) -> Result<(), ApiError> {
+    let caller = ic::caller();
+    topics_service::delete_topic(&caller, topic_name)
 }
 
 #[update]
