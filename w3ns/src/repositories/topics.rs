@@ -93,7 +93,7 @@ impl Topics {
             .unwrap()
             .iter()
             .find(|&topic| topic.name == topic_name);
-        
+
         if found_topic.is_some() {
             return Some(found_topic.unwrap().clone());
         } else {

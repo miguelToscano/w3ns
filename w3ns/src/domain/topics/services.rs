@@ -11,7 +11,9 @@ pub fn get_topics(owner: &Principal) -> Vec<Topic> {
 
 pub fn get_topic(owner: &Principal, topic_name: String) -> Result<Topic, ApiError> {
     ic::with(|topics_repository: &Topics| {
-        topics_repository.get_topic(&owner, topic_name).ok_or(ApiError::TopicNotFound)
+        topics_repository
+            .get_topic(&owner, topic_name)
+            .ok_or(ApiError::TopicNotFound)
     })
 }
 
