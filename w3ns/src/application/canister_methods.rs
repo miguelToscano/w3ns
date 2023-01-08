@@ -138,7 +138,7 @@ pub async fn subscribe_user_to_topic(
 
 #[update]
 #[candid_method(update)]
-pub async fn unsubscribe_users_from_topic(
+pub async fn unsubscribe_user_from_topic(
     registration_token: String,
     topic: String,
 ) -> Result<(), ApiError> {
