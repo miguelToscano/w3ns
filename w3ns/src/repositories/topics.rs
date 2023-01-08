@@ -20,7 +20,11 @@ impl Topics {
     pub fn add(&mut self, topic: &Topic) -> Result<(), ()> {
         let mut owner_topics = self.0.get(&topic.owner).unwrap_or(&vec![]).clone();
 
-        if owner_topics.iter().find(|owner_topic| owner_topic.name == topic.name).is_none() {
+        if owner_topics
+            .iter()
+            .find(|owner_topic| owner_topic.name == topic.name)
+            .is_none()
+        {
             owner_topics.push(topic.clone());
         }
 
@@ -33,7 +37,8 @@ impl Topics {
     pub fn delete(&mut self, owner: &Principal, topic_name: String) -> Result<(), ()> {
         let owner_topics = self.0.get(owner).unwrap();
 
-        let updated_topics = owner_topics.clone()
+        let updated_topics = owner_topics
+            .clone()
             .iter()
             .filter(|&topic| topic.name != topic_name)
             .map(|topic| topic.clone())
@@ -43,7 +48,7 @@ impl Topics {
         if updated_topics.len() == 0 {
             self.0.remove(owner);
         } else {
-            self.0.insert(*owner, updated_topics);    
+            self.0.insert(*owner, updated_topics);
         }
 
         Ok(())
@@ -60,7 +65,10 @@ impl Topics {
             return None;
         }
 
-        owner_topics.unwrap().iter().find(|&topic| topic.name == topic_name)
+        owner_topics
+            .unwrap()
+            .iter()
+            .find(|&topic| topic.name == topic_name)
     }
 
     pub fn get_all(&self) -> Vec<Vec<Topic>> {
