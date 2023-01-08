@@ -136,26 +136,14 @@ pub async fn subscribe_user_to_topic(
     Ok(())
 }
 
-// #[update]
-// #[candid_method(update)]
-// pub async fn subscribe_users_to_topic(
-//     registration_tokens: Vec<String>,
-//     topic: String,
-// ) -> Result<(), ApiError> {
-//     let caller = ic::caller();
-//     let api_key = api_keys_service::get(&caller).ok_or(ApiError::ApiKeyNotFound)?;
-//     topics_service::
-//     Ok(())
-// }
-
 #[update]
 #[candid_method(update)]
 pub async fn unsubscribe_users_from_topic(
-    registration_tokens: Vec<String>,
+    registration_token: String,
     topic: String,
 ) -> Result<(), ApiError> {
     let caller = ic::caller();
-    let api_key = api_keys_service::get(&caller).ok_or(ApiError::ApiKeyNotFound)?;
+    topics_service::unsubscribe_user_from_topic(&caller, topic, registration_token)?;
     Ok(())
 }
 
