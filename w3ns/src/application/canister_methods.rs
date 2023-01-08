@@ -118,14 +118,26 @@ pub async fn send_push_to_topic(
 
 #[update]
 #[candid_method(update)]
-pub async fn subscribe_users_to_topic(
-    registration_tokens: Vec<String>,
+pub async fn subscribe_user_to_topic(
+    registration_token: String,
     topic: String,
 ) -> Result<(), ApiError> {
     let caller = ic::caller();
-    let api_key = api_keys_service::get(&caller).ok_or(ApiError::ApiKeyNotFound)?;
+    topics_service::subscribe_user_to_topic(&caller, topic, registration_token)?;
     Ok(())
 }
+
+// #[update]
+// #[candid_method(update)]
+// pub async fn subscribe_users_to_topic(
+//     registration_tokens: Vec<String>,
+//     topic: String,
+// ) -> Result<(), ApiError> {
+//     let caller = ic::caller();
+//     let api_key = api_keys_service::get(&caller).ok_or(ApiError::ApiKeyNotFound)?;
+//     topics_service::
+//     Ok(())
+// }
 
 #[update]
 #[candid_method(update)]

@@ -27,7 +27,7 @@ service : {
   send_push_notification : (text, text, text) -> (Result);
   send_push_to_topic : (text, text, text) -> (Result);
   send_sms : (text, text) -> (Result);
-  subscribe_users_to_topic : (vec text, text) -> (Result);
+  subscribe_user_to_topic : (text, text) -> (Result);
   unsubscribe_users_from_topic : (vec text, text) -> (Result);
   whoami : () -> (principal) query;
 }

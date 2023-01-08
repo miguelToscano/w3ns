@@ -31,6 +31,27 @@ impl Topics {
         Ok(())
     }
 
+    // Provided topic has to exist
+    pub fn add_topic_subscriber(&mut self, owner: &Principal, topic_name: String, subscriber: String) -> Result<(), ()> {
+        let topic = self.get_topic(owner, topic_name.clone()).unwrap();
+
+        let mut updated_subscribers = topic.subscribers.clone();
+        updated_subscribers.push(subscriber);
+        updated_subscribers.dedup();
+
+        let updated_topic = Topic {
+            name: topic.name.clone(),
+            subscribers: updated_subscribers,
+            created_at: topic.created_at,
+            owner: topic.owner,
+        };
+
+        self.delete(owner, topic_name)?;
+        self.add(owner, &updated_topic)?;
+
+        Ok(())
+    }
+
     // Assumes the topic for the given owner exists
     pub fn delete(&mut self, owner: &Principal, topic_name: String) -> Result<(), ()> {
         let owner_topics = self.0.get(owner).unwrap();
