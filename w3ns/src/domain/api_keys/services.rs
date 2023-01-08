@@ -29,7 +29,9 @@ pub fn delete(owner: &Principal) -> Result<(), ApiError> {
 
 pub fn validate_api_key(owner: &Principal) -> Result<ApiKey, ApiError> {
     ic::with(|api_keys_repository: &ApiKeys| {
-        api_keys_repository.get(owner).ok_or(ApiError::ApiKeyNotFound)
+        api_keys_repository
+            .get(owner)
+            .ok_or(ApiError::ApiKeyNotFound)
     })
 }
 
