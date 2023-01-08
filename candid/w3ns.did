@@ -1,13 +1,24 @@
 type ApiError = variant {
+  TopicNotFound;
   ApiKeyNotFound;
   ApiKeyAlreadyExists;
   InvalidApiKey;
   InternalError;
+  TopicAlreadyExists;
 };
 type ApiKey = record { value : text; owner : principal; created_at : nat64 };
 type Result = variant { Ok; Err : ApiError };
+type Topic = record {
+  owner : principal;
+  name : text;
+  created_at : nat64;
+  subscribers : vec text;
+};
 service : {
+  create_topic : (text) -> (Result);
+  delete_topic : (text) -> (Result);
   get_all : () -> (vec ApiKey) query;
+  get_topics : () -> (vec Topic) query;
   has_key_registered : () -> (bool) query;
   name : () -> (text) query;
   register_key : (text) -> (Result);
