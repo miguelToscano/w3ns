@@ -67,9 +67,14 @@ pub fn unsubscribe_user_from_topic(
     user: String,
 ) -> Result<(), ApiError> {
     ic::with_mut(|topics_repository: &mut Topics| {
-        topics_repository
+        let topic = topics_repository
             .get_topic(owner, topic_name.clone())
             .ok_or(ApiError::TopicNotFound)?;
+        topic
+            .subscribers
+            .iter()
+            .find(|&subscriber| *subscriber == user)
+            .ok_or(ApiError::SubscriberNotFound)?;
         topics_repository
             .remove_topic_subscriber(owner, topic_name, user)
             .map_err(|_| ApiError::InternalError)?;
