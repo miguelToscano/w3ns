@@ -32,7 +32,12 @@ impl Topics {
     }
 
     // Provided topic has to exist
-    pub fn add_topic_subscriber(&mut self, owner: &Principal, topic_name: String, subscriber: String) -> Result<(), ()> {
+    pub fn add_topic_subscriber(
+        &mut self,
+        owner: &Principal,
+        topic_name: String,
+        subscriber: String,
+    ) -> Result<(), ()> {
         let topic = self.get_topic(owner, topic_name.clone()).unwrap();
 
         let mut updated_subscribers = topic.subscribers.clone();

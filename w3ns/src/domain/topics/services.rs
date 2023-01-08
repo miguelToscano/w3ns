@@ -37,10 +37,18 @@ pub fn delete_topic(owner: &Principal, topic_name: String) -> Result<(), ApiErro
     })
 }
 
-pub fn subscribe_user_to_topic(owner: &Principal, topic_name: String, user: String) -> Result<(), ApiError> {
+pub fn subscribe_user_to_topic(
+    owner: &Principal,
+    topic_name: String,
+    user: String,
+) -> Result<(), ApiError> {
     ic::with_mut(|topics_repository: &mut Topics| {
-        let topic = topics_repository.get_topic(owner, topic_name.clone()).ok_or(ApiError::TopicNotFound)?;
-        topics_repository.add_topic_subscriber(owner, topic_name, user).map_err(|_| ApiError::InternalError)?;
+        let topic = topics_repository
+            .get_topic(owner, topic_name.clone())
+            .ok_or(ApiError::TopicNotFound)?;
+        topics_repository
+            .add_topic_subscriber(owner, topic_name, user)
+            .map_err(|_| ApiError::InternalError)?;
         Ok(())
     })
 }
