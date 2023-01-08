@@ -139,7 +139,7 @@ pub async fn unsubscribe_user_from_topic(
 pub fn remove_key() -> Result<(), ApiError> {
     let caller = ic::caller();
     api_keys_service::validate_api_key(&caller)?;
-    api_keys_service::delete(&caller).map_err(|_| ApiError::InternalError)
+    api_keys_service::delete(&caller)
 }
 
 #[query]

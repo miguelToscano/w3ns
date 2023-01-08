@@ -22,6 +22,9 @@ pub fn register(api_key: &ApiKey) -> Result<(), ApiError> {
 pub fn delete(owner: &Principal) -> Result<(), ApiError> {
     ic::with_mut(|api_keys_repository: &mut ApiKeys| {
         api_keys_repository
+            .get(owner)
+            .ok_or(ApiError::ApiKeyNotFound)?;
+        api_keys_repository
             .delete(owner)
             .map_err(|_| ApiError::InternalError)
     })
