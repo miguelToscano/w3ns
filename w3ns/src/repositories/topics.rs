@@ -58,10 +58,21 @@ impl Topics {
     }
 
     // Provided topic has to exist
-    pub fn remove_topic_subscriber(&mut self, owner: &Principal, topic_name: String, subscriber: String) -> Result<(), ()> {
+    pub fn remove_topic_subscriber(
+        &mut self,
+        owner: &Principal,
+        topic_name: String,
+        subscriber: String,
+    ) -> Result<(), ()> {
         let topic = self.get_topic(owner, topic_name.clone()).unwrap();
 
-        let updated_subscribers = topic.subscribers.clone().iter().filter(|&topic_subscriber| *topic_subscriber != subscriber).map(|subscriber| subscriber.clone()).collect::<Vec<String>>();
+        let updated_subscribers = topic
+            .subscribers
+            .clone()
+            .iter()
+            .filter(|&topic_subscriber| *topic_subscriber != subscriber)
+            .map(|subscriber| subscriber.clone())
+            .collect::<Vec<String>>();
 
         let updated_topic = Topic {
             name: topic.name.clone(),

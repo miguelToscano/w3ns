@@ -61,8 +61,11 @@ pub fn subscribe_user_to_topic(
     })
 }
 
-
-pub fn unsubscribe_user_from_topic(owner: &Principal, topic_name: String, user: String) -> Result<(), ApiError> {
+pub fn unsubscribe_user_from_topic(
+    owner: &Principal,
+    topic_name: String,
+    user: String,
+) -> Result<(), ApiError> {
     ic::with_mut(|topics_repository: &mut Topics| {
         topics_repository
             .get_topic(owner, topic_name.clone())
