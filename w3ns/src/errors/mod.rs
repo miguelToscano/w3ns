@@ -9,4 +9,5 @@ pub enum ApiError {
     InternalError,
     TopicAlreadyExists,
     TopicNotFound,
+    SubscriberNotFound,
 }

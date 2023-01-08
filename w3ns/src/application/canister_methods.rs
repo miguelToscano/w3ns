@@ -26,25 +26,19 @@ pub fn name() -> String {
 #[candid_method(update)]
 pub fn register_key(key: String) -> Result<(), ApiError> {
     let caller = ic::caller();
-
-    if api_keys_service::get(&caller).is_some() {
-        return Err(ApiError::ApiKeyAlreadyExists);
-    }
-
     let api_key = ApiKey {
         value: key,
         owner: caller,
         created_at: ic::time(),
     };
-
-    api_keys_service::create(&api_key).map_err(|_| ApiError::InternalError)
+    api_keys_service::register(&api_key)
 }
 
 #[update]
 #[candid_method(update)]
 pub async fn send_email(to: String, subject: String, body: String) -> Result<(), ApiError> {
     let caller = ic::caller();
-    let api_key = api_keys_service::get(&caller).ok_or(ApiError::ApiKeyNotFound)?;
+    let api_key = api_keys_service::validate_api_key(&caller)?;
     let email = Email { to, subject, body };
     emails_service::send_courier_email(&api_key.value, &email).await
 }
@@ -53,7 +47,7 @@ pub async fn send_email(to: String, subject: String, body: String) -> Result<(),
 #[candid_method(update)]
 pub async fn send_sms(to: String, message: String) -> Result<(), ApiError> {
     let caller = ic::caller();
-    let api_key = api_keys_service::get(&caller).ok_or(ApiError::ApiKeyNotFound)?;
+    let api_key = api_keys_service::validate_api_key(&caller)?;
     let sms = Sms { to, message };
     sms_service::send_courier_sms(&api_key.value, &sms).await
 }
@@ -66,7 +60,7 @@ pub async fn send_push_notification(
     body: String,
 ) -> Result<(), ApiError> {
     let caller = ic::caller();
-    let api_key = api_keys_service::get(&caller).ok_or(ApiError::ApiKeyNotFound)?;
+    let api_key = api_keys_service::validate_api_key(&caller)?;
     let push_notification = Push {
         firebase_token,
         title,
@@ -86,14 +80,12 @@ pub fn get_topics() -> Vec<Topic> {
 #[candid_method(update)]
 pub fn create_topic(topic_name: String) -> Result<(), ApiError> {
     let caller = ic::caller();
-
     let topic = Topic {
         name: topic_name,
         owner: caller.clone(),
         subscribers: vec![],
         created_at: ic::time(),
     };
-
     topics_service::create_topic(&caller, &topic)
 }
 
@@ -112,17 +104,14 @@ pub async fn send_push_to_topic(
     body: String,
 ) -> Result<(), ApiError> {
     let caller = ic::caller();
-    let api_key = api_keys_service::get(&caller).ok_or(ApiError::ApiKeyNotFound)?;
+    let api_key = api_keys_service::validate_api_key(&caller)?;
     let topic = topics_service::get_topic(&caller, topic)?;
     let push_notifications = MultiplePush {
         firebase_tokens: topic.subscribers.clone(),
         title,
         body,
     };
-
-    push_service::send_courier_push(&api_key.value, &push_notifications).await?;
-
-    Ok(())
+    push_service::send_courier_push(&api_key.value, &push_notifications).await
 }
 
 #[update]
@@ -132,8 +121,7 @@ pub async fn subscribe_user_to_topic(
     topic: String,
 ) -> Result<(), ApiError> {
     let caller = ic::caller();
-    topics_service::subscribe_user_to_topic(&caller, topic, registration_token)?;
-    Ok(())
+    topics_service::subscribe_user_to_topic(&caller, topic, registration_token)
 }
 
 #[update]
@@ -143,15 +131,14 @@ pub async fn unsubscribe_user_from_topic(
     topic: String,
 ) -> Result<(), ApiError> {
     let caller = ic::caller();
-    topics_service::unsubscribe_user_from_topic(&caller, topic, registration_token)?;
-    Ok(())
+    topics_service::unsubscribe_user_from_topic(&caller, topic, registration_token)
 }
 
 #[update]
 #[candid_method(update)]
 pub fn remove_key() -> Result<(), ApiError> {
     let caller = ic::caller();
-    api_keys_service::get(&caller).ok_or(ApiError::ApiKeyNotFound)?;
+    api_keys_service::validate_api_key(&caller)?;
     api_keys_service::delete(&caller).map_err(|_| ApiError::InternalError)
 }
 
