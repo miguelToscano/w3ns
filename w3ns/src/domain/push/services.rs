@@ -7,11 +7,11 @@ use ic_cdk::api::management_canister::http_request::{
 use ic_kit::ic;
 use uuid::Uuid;
 
-use crate::domain::push::types::Push;
+use super::types::ToCourierFormat;
 
 const COURIER_SEND_URL: &str = "https://api.courier.com/send";
 
-pub async fn send_courier_push(api_key: &str, push_notification: &Push) -> Result<(), ApiError> {
+pub async fn send_courier_push(api_key: &str, push_notification: &impl ToCourierFormat) -> Result<(), ApiError> {
     let (bytes,): (Vec<u8>,) = ic::call(Principal::management_canister(), "raw_rand", ())
         .await
         .map_err(|(_, _)| ApiError::InternalError)?;

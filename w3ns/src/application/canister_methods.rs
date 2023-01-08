@@ -9,7 +9,7 @@ use crate::domain::api_keys::types::ApiKey;
 use crate::domain::emails::services as emails_service;
 use crate::domain::emails::types::Email;
 use crate::domain::push::services as push_service;
-use crate::domain::push::types::Push;
+use crate::domain::push::types::{Push, MultiplePush};
 use crate::domain::sms::services as sms_service;
 use crate::domain::sms::types::Sms;
 use crate::domain::topics::services as topics_service;
@@ -79,7 +79,7 @@ pub async fn send_push_notification(
 #[candid_method(query)]
 pub fn get_topics() -> Vec<Topic> {
     let caller = ic::caller();
-    topics_service::get_owner_topics(&caller)
+    topics_service::get_topics(&caller)
 }
 
 #[update]
@@ -107,12 +107,21 @@ pub fn delete_topic(topic_name: String) -> Result<(), ApiError> {
 #[update]
 #[candid_method(update)]
 pub async fn send_push_to_topic(
+    topic: String,
     title: String,
     body: String,
-    topic: String,
 ) -> Result<(), ApiError> {
     let caller = ic::caller();
     let api_key = api_keys_service::get(&caller).ok_or(ApiError::ApiKeyNotFound)?;
+    let topic = topics_service::get_topic(&caller, topic)?;
+    let push_notifications = MultiplePush {
+        firebase_tokens: topic.subscribers.clone(),
+        title,
+        body,
+    };
+
+    push_service::send_courier_push(&api_key.value, &push_notifications).await?;
+    
     Ok(())
 }
 

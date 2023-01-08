@@ -82,17 +82,23 @@ impl Topics {
         self.0.get(owner).unwrap_or(&vec![]).to_vec()
     }
 
-    pub fn get_topic(&self, owner: &Principal, topic_name: String) -> Option<&Topic> {
+    pub fn get_topic(&self, owner: &Principal, topic_name: String) -> Option<Topic> {
         let owner_topics = self.0.get(owner);
 
         if owner_topics.is_none() {
             return None;
         }
 
-        owner_topics
+        let found_topic = owner_topics
             .unwrap()
             .iter()
-            .find(|&topic| topic.name == topic_name)
+            .find(|&topic| topic.name == topic_name);
+        
+        if found_topic.is_some() {
+            return Some(found_topic.unwrap().clone());
+        } else {
+            return None;
+        }
     }
 
     pub fn get_all(&self) -> Vec<Vec<Topic>> {

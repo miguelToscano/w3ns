@@ -5,8 +5,14 @@ use crate::domain::topics::types::Topic;
 use crate::errors::ApiError;
 use crate::repositories::topics::Topics;
 
-pub fn get_owner_topics(owner: &Principal) -> Vec<Topic> {
+pub fn get_topics(owner: &Principal) -> Vec<Topic> {
     ic::with(|topics_repository: &Topics| topics_repository.get_topics(owner))
+}
+
+pub fn get_topic(owner: &Principal, topic_name: String) -> Result<Topic, ApiError> {
+    ic::with(|topics_repository: &Topics| {
+        topics_repository.get_topic(&owner, topic_name).ok_or(ApiError::TopicNotFound)
+    })
 }
 
 pub fn create_topic(owner: &Principal, topic: &Topic) -> Result<(), ApiError> {
