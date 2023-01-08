@@ -12,6 +12,8 @@ use crate::domain::push::services as push_service;
 use crate::domain::push::types::Push;
 use crate::domain::sms::services as sms_service;
 use crate::domain::sms::types::Sms;
+use crate::domain::topics::services as topics_service;
+use crate::domain::topics::types::Topic;
 use crate::errors::ApiError;
 
 #[query]
@@ -71,6 +73,13 @@ pub async fn send_push_notification(
         body,
     };
     push_service::send_courier_push(&api_key.value, &push_notification).await
+}
+
+#[query]
+#[candid_method(query)]
+pub fn get_topics() -> Vec<Topic> {
+    let caller = ic::caller();
+    topics_service::get_owner_topics(&caller)
 }
 
 #[update]

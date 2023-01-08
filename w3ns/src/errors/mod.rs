@@ -7,4 +7,6 @@ pub enum ApiError {
     ApiKeyAlreadyExists,
     InvalidApiKey,
     InternalError,
+    TopicAlreadyExists,
+    TopicNotFound,
 }

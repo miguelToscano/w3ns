@@ -1,7 +1,6 @@
-use crate::domain::api_keys::types::ApiKey;
 use crate::domain::topics::types::Topic;
 use ic_kit::candid::Principal;
-use std::collections::HashMap;
+use std::{collections::HashMap, vec};
 
 #[derive(Default)]
 pub struct Topics(HashMap<Principal, Vec<Topic>>);
@@ -16,9 +15,8 @@ impl Topics {
         self.0 = archive.into_iter().collect();
     }
 
-    //
-    pub fn add(&mut self, topic: &Topic) -> Result<(), ()> {
-        let mut owner_topics = self.0.get(&topic.owner).unwrap_or(&vec![]).clone();
+    pub fn add(&mut self, owner: &Principal, topic: &Topic) -> Result<(), ()> {
+        let mut owner_topics = self.0.get(owner).unwrap_or(&vec![]).clone();
 
         if owner_topics
             .iter()
@@ -28,7 +26,7 @@ impl Topics {
             owner_topics.push(topic.clone());
         }
 
-        self.0.insert(topic.owner, owner_topics);
+        self.0.insert(*owner, owner_topics);
 
         Ok(())
     }
@@ -54,8 +52,8 @@ impl Topics {
         Ok(())
     }
 
-    pub fn get_topics(&self, owner: &Principal) -> Option<Vec<Topic>> {
-        self.0.get(owner).cloned()
+    pub fn get_topics(&self, owner: &Principal) -> Vec<Topic> {
+        self.0.get(owner).unwrap_or(&vec![]).to_vec()
     }
 
     pub fn get_topic(&self, owner: &Principal, topic_name: String) -> Option<&Topic> {
