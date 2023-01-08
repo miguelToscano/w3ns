@@ -84,7 +84,7 @@ pub fn get_topics() -> Vec<Topic> {
 
 #[update]
 #[candid_method(update)]
-pub fn create_topic(name: String,) -> Result<(), ApiError> {
+pub fn create_topic(name: String) -> Result<(), ApiError> {
     let caller = ic::caller();
 
     let topic = Topic {
