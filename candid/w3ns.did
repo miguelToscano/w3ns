@@ -3,6 +3,7 @@ type ApiError = variant {
   ApiKeyNotFound;
   ApiKeyAlreadyExists;
   InvalidApiKey;
+  SubscriberNotFound;
   InternalError;
   TopicAlreadyExists;
 };
@@ -28,6 +29,6 @@ service : {
   send_push_to_topic : (text, text, text) -> (Result);
   send_sms : (text, text) -> (Result);
   subscribe_user_to_topic : (text, text) -> (Result);
-  unsubscribe_users_from_topic : (text, text) -> (Result);
+  unsubscribe_user_from_topic : (text, text) -> (Result);
   whoami : () -> (principal) query;
 }
