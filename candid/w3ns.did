@@ -15,12 +15,7 @@ type SendPushInput = record {
   body : text;
   firebase_token : text;
 };
-type SendPushToTopicInput = record {
-  title : text;
-  topic : text;
-  body : text;
-  firebase_tokens : vec text;
-};
+type SendPushToTopicInput = record { title : text; topic : text; body : text };
 type SendSmsInput = record { to : text; message : text };
 type SubscribeUserToTopicInput = record {
   topic : text;
