@@ -9,12 +9,32 @@ type ApiError = variant {
 };
 type ApiKey = record { value : text; owner : principal; created_at : nat64 };
 type Result = variant { Ok; Err : ApiError };
+type SendEmailInput = record { to : text; subject : text; body : text };
+type SendPushInput = record {
+  title : text;
+  body : text;
+  firebase_token : text;
+};
+type SendPushToTopicInput = record {
+  title : text;
+  topic : text;
+  body : text;
+  firebase_tokens : vec text;
+};
 type SendSmsInput = record { to : text; message : text };
+type SubscribeUserToTopicInput = record {
+  topic : text;
+  registration_token : text;
+};
 type Topic = record {
   owner : principal;
   name : text;
   created_at : nat64;
   subscribers : vec text;
+};
+type UnsubscribeUserFromTopic = record {
+  topic : text;
+  registration_token : text;
 };
 service : {
   create_topic : (text) -> (Result);
@@ -25,11 +45,11 @@ service : {
   name : () -> (text) query;
   register_key : (text) -> (Result);
   remove_key : () -> (Result);
-  send_email : (text, text, text) -> (Result);
-  send_push_notification : (text, text, text) -> (Result);
-  send_push_to_topic : (text, text, text) -> (Result);
+  send_email : (SendEmailInput) -> (Result);
+  send_push_notification : (SendPushInput) -> (Result);
+  send_push_to_topic : (SendPushToTopicInput) -> (Result);
   send_sms : (SendSmsInput) -> (Result);
-  subscribe_user_to_topic : (text, text) -> (Result);
-  unsubscribe_user_from_topic : (text, text) -> (Result);
+  subscribe_user_to_topic : (SubscribeUserToTopicInput) -> (Result);
+  unsubscribe_user_from_topic : (UnsubscribeUserFromTopic) -> (Result);
   whoami : () -> (principal) query;
 }

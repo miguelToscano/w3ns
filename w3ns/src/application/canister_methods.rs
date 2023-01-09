@@ -90,8 +90,8 @@ pub fn delete_topic(topic_name: String) -> Result<(), ApiError> {
 pub async fn send_push_to_topic(input: SendPushToTopicInput) -> Result<(), ApiError> {
     let caller = ic::caller();
     let api_key = api_keys_service::validate_api_key(&caller)?;
-    topics_service::get_topic(&caller, input.clone().topic)?;
-    push_service::send_courier_push(&api_key.value, &input).await
+    let topic = topics_service::get_topic(&caller, input.clone().topic)?;
+    push_service::send_courier_topic_push(&api_key.value, &input, topic.subscribers).await
 }
 
 #[update]
