@@ -13,7 +13,7 @@ use crate::domain::push::types::{SendPushInput, SendPushToTopicInput};
 use crate::domain::sms::services as sms_service;
 use crate::domain::sms::types::SendSmsInput;
 use crate::domain::topics::services as topics_service;
-use crate::domain::topics::types::Topic;
+use crate::domain::topics::types::{SubscribeUserToTopicInput, Topic, UnsubscribeUserFromTopic};
 use crate::errors::ApiError;
 
 #[query]
@@ -96,22 +96,16 @@ pub async fn send_push_to_topic(input: SendPushToTopicInput) -> Result<(), ApiEr
 
 #[update]
 #[candid_method(update)]
-pub async fn subscribe_user_to_topic(
-    registration_token: String,
-    topic: String,
-) -> Result<(), ApiError> {
+pub async fn subscribe_user_to_topic(input: SubscribeUserToTopicInput) -> Result<(), ApiError> {
     let caller = ic::caller();
-    topics_service::subscribe_user_to_topic(&caller, topic, registration_token)
+    topics_service::subscribe_user_to_topic(&caller, &input)
 }
 
 #[update]
 #[candid_method(update)]
-pub async fn unsubscribe_user_from_topic(
-    registration_token: String,
-    topic: String,
-) -> Result<(), ApiError> {
+pub async fn unsubscribe_user_from_topic(input: UnsubscribeUserFromTopic) -> Result<(), ApiError> {
     let caller = ic::caller();
-    topics_service::unsubscribe_user_from_topic(&caller, topic, registration_token)
+    topics_service::unsubscribe_user_from_topic(&caller, &input)
 }
 
 #[update]

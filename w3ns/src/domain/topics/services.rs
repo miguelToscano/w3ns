@@ -1,7 +1,7 @@
 use candid::Principal;
 use ic_kit::ic;
 
-use crate::domain::topics::types::Topic;
+use crate::domain::topics::types::{SubscribeUserToTopicInput, Topic, UnsubscribeUserFromTopic};
 use crate::errors::ApiError;
 use crate::repositories::topics::Topics;
 
@@ -47,15 +47,14 @@ pub fn delete_topic(owner: &Principal, topic_name: String) -> Result<(), ApiErro
 
 pub fn subscribe_user_to_topic(
     owner: &Principal,
-    topic_name: String,
-    user: String,
+    input: &SubscribeUserToTopicInput,
 ) -> Result<(), ApiError> {
     ic::with_mut(|topics_repository: &mut Topics| {
         topics_repository
-            .get_topic(owner, topic_name.clone())
+            .get_topic(owner, input.clone().topic)
             .ok_or(ApiError::TopicNotFound)?;
         topics_repository
-            .add_topic_subscriber(owner, topic_name, user)
+            .add_topic_subscriber(owner, input.clone().topic, input.clone().registration_token)
             .map_err(|_| ApiError::InternalError)?;
         Ok(())
     })
@@ -63,20 +62,19 @@ pub fn subscribe_user_to_topic(
 
 pub fn unsubscribe_user_from_topic(
     owner: &Principal,
-    topic_name: String,
-    user: String,
+    input: &UnsubscribeUserFromTopic,
 ) -> Result<(), ApiError> {
     ic::with_mut(|topics_repository: &mut Topics| {
         let topic = topics_repository
-            .get_topic(owner, topic_name.clone())
+            .get_topic(owner, input.clone().topic)
             .ok_or(ApiError::TopicNotFound)?;
         topic
             .subscribers
             .iter()
-            .find(|&subscriber| *subscriber == user)
+            .find(|&subscriber| *subscriber == input.clone().registration_token)
             .ok_or(ApiError::SubscriberNotFound)?;
         topics_repository
-            .remove_topic_subscriber(owner, topic_name, user)
+            .remove_topic_subscriber(owner, input.clone().topic, input.clone().registration_token)
             .map_err(|_| ApiError::InternalError)?;
         Ok(())
     })
