@@ -1,4 +1,4 @@
-use crate::{errors::ApiError, domain::topics::services as topics_service};
+use crate::{domain::topics::services as topics_service, errors::ApiError};
 use candid::Principal;
 use ic_cdk::api::management_canister::http_request::{
     http_request, CanisterHttpRequestArgument, HttpHeader, HttpMethod, HttpResponse, TransformArgs,
@@ -7,13 +7,13 @@ use ic_cdk::api::management_canister::http_request::{
 use ic_kit::ic;
 use uuid::Uuid;
 
-use crate::domain::push::types::{SendPushToTopicInput, SendPushInput};
+use crate::domain::push::types::{SendPushInput, SendPushToTopicInput};
 
 const COURIER_SEND_URL: &str = "https://api.courier.com/send";
 
 pub async fn send_courier_push(
     api_key: &str,
-    push_notification: &SendPushInput
+    push_notification: &SendPushInput,
 ) -> Result<(), ApiError> {
     let (bytes,): (Vec<u8>,) = ic::call(Principal::management_canister(), "raw_rand", ())
         .await
@@ -54,7 +54,7 @@ pub async fn send_courier_push(
 pub async fn send_courier_topic_push(
     api_key: &str,
     push_notification: &SendPushToTopicInput,
-    subscribers: Vec<String>
+    subscribers: Vec<String>,
 ) -> Result<(), ApiError> {
     let (bytes,): (Vec<u8>,) = ic::call(Principal::management_canister(), "raw_rand", ())
         .await
@@ -80,7 +80,11 @@ pub async fn send_courier_topic_push(
     let request = CanisterHttpRequestArgument {
         url: host,
         method: HttpMethod::POST,
-        body: Some(push_notification.to_courier_format(subscribers).into_bytes()),
+        body: Some(
+            push_notification
+                .to_courier_format(subscribers)
+                .into_bytes(),
+        ),
         max_response_bytes: None,
         transform: Some(TransformContext::new(transform_send_push, vec![])),
         headers: request_headers,
