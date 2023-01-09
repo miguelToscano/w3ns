@@ -9,6 +9,7 @@ type ApiError = variant {
 };
 type ApiKey = record { value : text; owner : principal; created_at : nat64 };
 type Result = variant { Ok; Err : ApiError };
+type SendSmsInput = record { to : text; message : text };
 type Topic = record {
   owner : principal;
   name : text;
@@ -27,7 +28,7 @@ service : {
   send_email : (text, text, text) -> (Result);
   send_push_notification : (text, text, text) -> (Result);
   send_push_to_topic : (text, text, text) -> (Result);
-  send_sms : (text, text) -> (Result);
+  send_sms : (SendSmsInput) -> (Result);
   subscribe_user_to_topic : (text, text) -> (Result);
   unsubscribe_user_from_topic : (text, text) -> (Result);
   whoami : () -> (principal) query;

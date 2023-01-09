@@ -7,11 +7,11 @@ use ic_kit::*;
 use crate::domain::api_keys::services as api_keys_service;
 use crate::domain::api_keys::types::ApiKey;
 use crate::domain::emails::services as emails_service;
-use crate::domain::emails::types::Email;
+use crate::domain::emails::types::SendEmailInput;
 use crate::domain::push::services as push_service;
-use crate::domain::push::types::{MultiplePush, Push};
+use crate::domain::push::types::{SendPushInput, SendPushToTopicInput};
 use crate::domain::sms::services as sms_service;
-use crate::domain::sms::types::Sms;
+use crate::domain::sms::types::SendSmsInput;
 use crate::domain::topics::services as topics_service;
 use crate::domain::topics::types::Topic;
 use crate::errors::ApiError;
@@ -36,37 +36,28 @@ pub fn register_key(key: String) -> Result<(), ApiError> {
 
 #[update]
 #[candid_method(update)]
-pub async fn send_email(to: String, subject: String, body: String) -> Result<(), ApiError> {
+pub async fn send_email(input: SendEmailInput) -> Result<(), ApiError> {
     let caller = ic::caller();
     let api_key = api_keys_service::validate_api_key(&caller)?;
-    let email = Email { to, subject, body };
-    emails_service::send_courier_email(&api_key.value, &email).await
+    emails_service::send_courier_email(&api_key.value, &input).await
 }
 
 #[update]
 #[candid_method(update)]
-pub async fn send_sms(to: String, message: String) -> Result<(), ApiError> {
+pub async fn send_sms(input: SendSmsInput) -> Result<(), ApiError> {
     let caller = ic::caller();
     let api_key = api_keys_service::validate_api_key(&caller)?;
-    let sms = Sms { to, message };
-    sms_service::send_courier_sms(&api_key.value, &sms).await
+    sms_service::send_courier_sms(&api_key.value, &input).await
 }
 
 #[update]
 #[candid_method(update)]
 pub async fn send_push_notification(
-    firebase_token: String,
-    title: String,
-    body: String,
+    input: SendPushInput
 ) -> Result<(), ApiError> {
     let caller = ic::caller();
     let api_key = api_keys_service::validate_api_key(&caller)?;
-    let push_notification = Push {
-        firebase_token,
-        title,
-        body,
-    };
-    push_service::send_courier_push(&api_key.value, &push_notification).await
+    push_service::send_courier_push(&api_key.value, &input).await
 }
 
 #[query]
@@ -99,19 +90,12 @@ pub fn delete_topic(topic_name: String) -> Result<(), ApiError> {
 #[update]
 #[candid_method(update)]
 pub async fn send_push_to_topic(
-    topic: String,
-    title: String,
-    body: String,
+    input: SendPushToTopicInput
 ) -> Result<(), ApiError> {
     let caller = ic::caller();
     let api_key = api_keys_service::validate_api_key(&caller)?;
-    let topic = topics_service::get_topic(&caller, topic)?;
-    let push_notifications = MultiplePush {
-        firebase_tokens: topic.subscribers.clone(),
-        title,
-        body,
-    };
-    push_service::send_courier_push(&api_key.value, &push_notifications).await
+    topics_service::get_topic(&caller, input.clone().topic)?;
+    push_service::send_courier_push(&api_key.value, &input).await
 }
 
 #[update]

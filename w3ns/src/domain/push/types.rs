@@ -2,14 +2,15 @@ use ic_kit::{candid::CandidType, ic};
 use serde::{Deserialize, Serialize};
 
 #[derive(CandidType, Serialize, Deserialize, Clone, Debug)]
-pub struct Push {
+pub struct SendPushInput {
     pub firebase_token: String,
     pub title: String,
     pub body: String,
 }
 
 #[derive(CandidType, Serialize, Deserialize, Clone, Debug)]
-pub struct MultiplePush {
+pub struct SendPushToTopicInput {
+    pub topic: String,
     pub firebase_tokens: Vec<String>,
     pub title: String,
     pub body: String,
@@ -19,13 +20,13 @@ pub trait ToCourierFormat {
     fn to_courier_format(&self) -> String;
 }
 
-impl ToCourierFormat for Push {
+impl ToCourierFormat for SendPushInput {
     fn to_courier_format(&self) -> String {
         format!("{{ \"message\": {{ \"to\": {{\"firebaseToken\":\"{}\"}}, \"content\": {{ \"title\": \"{}\", \"body\": \"{}\" }} }} }}", self.firebase_token, self.title, self.body)
     }
 }
 
-impl ToCourierFormat for MultiplePush {
+impl ToCourierFormat for SendPushToTopicInput {
     fn to_courier_format(&self) -> String {
         let mut firebase_tokens_string = vec![];
 
