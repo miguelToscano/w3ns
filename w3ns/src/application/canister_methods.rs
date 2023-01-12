@@ -49,7 +49,10 @@ pub async fn send_email(input: SendEmailInput) -> Result<(), ApiError> {
     ic::print(format!("Cycles availabe: {}", available_cycles));
 
     if available_cycles < SEND_EMAIL_FEE {
-        return Err(ApiError::InsufficientCyclesReceived(format!("Required cycles: {}", SEND_EMAIL_FEE)));
+        return Err(ApiError::InsufficientCyclesReceived(format!(
+            "Required cycles: {}",
+            SEND_EMAIL_FEE
+        )));
     }
 
     let accepted_cycles = ic::msg_cycles_accept(SEND_EMAIL_FEE);
@@ -67,7 +70,10 @@ pub async fn send_sms(input: SendSmsInput) -> Result<(), ApiError> {
     ic::print(format!("Cycles availabe: {}", available_cycles));
 
     if available_cycles < SEND_SMS_FEE {
-        return Err(ApiError::InsufficientCyclesReceived(format!("Required cycles: {}", SEND_SMS_FEE)));
+        return Err(ApiError::InsufficientCyclesReceived(format!(
+            "Required cycles: {}",
+            SEND_SMS_FEE
+        )));
     }
 
     let accepted_cycles = ic::msg_cycles_accept(SEND_SMS_FEE);
@@ -85,7 +91,10 @@ pub async fn send_push(input: SendPushInput) -> Result<(), ApiError> {
     ic::print(format!("Cycles availabe: {}", available_cycles));
 
     if available_cycles < SEND_PUSH_FEE {
-        return Err(ApiError::InsufficientCyclesReceived(format!("Required cycles: {}", SEND_PUSH_FEE)));
+        return Err(ApiError::InsufficientCyclesReceived(format!(
+            "Required cycles: {}",
+            SEND_PUSH_FEE
+        )));
     }
 
     let accepted_cycles = ic::msg_cycles_accept(SEND_PUSH_FEE);
@@ -136,7 +145,10 @@ pub async fn send_push_to_topic(input: SendPushToTopicInput) -> Result<(), ApiEr
     ic::print(format!("Cycles availabe: {}", available_cycles));
 
     if available_cycles < SEND_PUSH_TO_TOPIC_FEE {
-        return Err(ApiError::InsufficientCyclesReceived(format!("Required cycles: {}", SEND_PUSH_TO_TOPIC_FEE)));
+        return Err(ApiError::InsufficientCyclesReceived(format!(
+            "Required cycles: {}",
+            SEND_PUSH_TO_TOPIC_FEE
+        )));
     }
 
     let accepted_cycles = ic::msg_cycles_accept(SEND_PUSH_TO_TOPIC_FEE);
