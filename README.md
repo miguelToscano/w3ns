@@ -28,8 +28,8 @@ To set up a Courier Channel:
 - Follow the steps for each of the providers that W3NS supports (Gmail, Twilio, Firebase FCM)
 
 # Sending notifications
-For the following steps to work you should already have you Courier's API key registered as well as the Courier's providers configured.
-Each notification sending method requires 4000000000 cycles payment in order to cover for cycles consumed.
+For the following steps to work you should already have your Courier's API key registered as well as the Courier's providers configured.
+Each notification sending method requires a 4000000000 cycles payment in order to cover for cycles consumed.
 ## Send email
 You can send emails via W3NS by running:
 
