@@ -1,7 +1,7 @@
 # W3NS
 An Internet Computer service for notifications
 
-## Getting an API key
+# Getting an API key
 We use Courier notifications API in order to integrate with different providers.
 
 - Create an account in https://www.courier.com/
@@ -9,12 +9,12 @@ We use Courier notifications API in order to integrate with different providers.
 - Go to Settings > API Keys
 - Generate New API key
 
-## Register your API Key
+# Register your API Key
 Now you need to register your API key in order to let W3NS send notifications on your behalf
 
 `dfx canister --wallet=<YOUR_WALLET_PRINCIPAL_ID> call w3ns register_key "(\"<YOUR_COURIER_API_KEY>\")"`
 
-## Courier Channels setup
+# Courier Channels setup
 W3NS currently supports 3 notifications channels:
 
 - `Gmail` for emails 
