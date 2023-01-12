@@ -85,6 +85,12 @@ pub fn delete_topic(topic_name: String) -> Result<(), ApiError> {
     topics_service::delete_topic(&caller, topic_name)
 }
 
+#[query]
+#[candid_method(query)]
+pub fn cycles() -> u64 {
+    ic::balance()
+}
+
 #[update]
 #[candid_method(update)]
 pub async fn send_push_to_topic(input: SendPushToTopicInput) -> Result<(), ApiError> {
