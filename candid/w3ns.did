@@ -1,5 +1,5 @@
 type ApiError = variant {
-  InsufficientCyclesReceived;
+  InsufficientCyclesReceived : text;
   TopicNotFound;
   ApiKeyNotFound;
   ApiKeyAlreadyExists;
