@@ -44,7 +44,14 @@ pub fn register_key(key: String) -> Result<(), ApiError> {
 pub async fn send_email(input: SendEmailInput) -> Result<(), ApiError> {
     let available_cycles = ic::msg_cycles_available();
     ic::print(format!("Cycles availabe: {}", available_cycles));
-    
+
+    if available_cycles < SEND_EMAIL_FEE {
+        return Err(ApiError::InsufficientCyclesReceived);
+    }
+
+    let accepted_cycles = ic::msg_cycles_accept(SEND_EMAIL_FEE);
+    ic::print(format!("Cycles accepted: {}", accepted_cycles));
+
     let caller = ic::caller();
     let api_key = api_keys_service::validate_api_key(&caller)?;
     emails_service::send_courier_email(&api_key.value, &input).await
@@ -53,6 +60,16 @@ pub async fn send_email(input: SendEmailInput) -> Result<(), ApiError> {
 #[update]
 #[candid_method(update)]
 pub async fn send_sms(input: SendSmsInput) -> Result<(), ApiError> {
+    let available_cycles = ic::msg_cycles_available();
+    ic::print(format!("Cycles availabe: {}", available_cycles));
+
+    if available_cycles < SEND_SMS_FEE {
+        return Err(ApiError::InsufficientCyclesReceived);
+    }
+
+    let accepted_cycles = ic::msg_cycles_accept(SEND_SMS_FEE);
+    ic::print(format!("Cycles accepted: {}", accepted_cycles));
+
     let caller = ic::caller();
     let api_key = api_keys_service::validate_api_key(&caller)?;
     sms_service::send_courier_sms(&api_key.value, &input).await
@@ -61,6 +78,16 @@ pub async fn send_sms(input: SendSmsInput) -> Result<(), ApiError> {
 #[update]
 #[candid_method(update)]
 pub async fn send_push(input: SendPushInput) -> Result<(), ApiError> {
+    let available_cycles = ic::msg_cycles_available();
+    ic::print(format!("Cycles availabe: {}", available_cycles));
+
+    if available_cycles < SEND_PUSH_FEE {
+        return Err(ApiError::InsufficientCyclesReceived);
+    }
+
+    let accepted_cycles = ic::msg_cycles_accept(SEND_PUSH_FEE);
+    ic::print(format!("Cycles accepted: {}", accepted_cycles));
+
     let caller = ic::caller();
     let api_key = api_keys_service::validate_api_key(&caller)?;
     push_service::send_courier_push(&api_key.value, &input).await
@@ -102,6 +129,16 @@ pub fn cycles() -> u64 {
 #[update]
 #[candid_method(update)]
 pub async fn send_push_to_topic(input: SendPushToTopicInput) -> Result<(), ApiError> {
+    let available_cycles = ic::msg_cycles_available();
+    ic::print(format!("Cycles availabe: {}", available_cycles));
+
+    if available_cycles < SEND_PUSH_TO_TOPIC_FEE {
+        return Err(ApiError::InsufficientCyclesReceived);
+    }
+
+    let accepted_cycles = ic::msg_cycles_accept(SEND_PUSH_TO_TOPIC_FEE);
+    ic::print(format!("Cycles accepted: {}", accepted_cycles));
+
     let caller = ic::caller();
     let api_key = api_keys_service::validate_api_key(&caller)?;
     let topic = topics_service::get_topic(&caller, input.clone().topic)?;
