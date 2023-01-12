@@ -201,7 +201,7 @@ pub fn get_all() -> Vec<ApiKey> {
     api_keys_service::get_all()
 }
 
-#[derive(CandidType, Deserialize)]
+#[derive(CandidType, Deserialize, Clone)]
 pub struct StableStorage {
     api_keys: Vec<(Principal, ApiKey)>,
     topics: Vec<(Principal, Vec<Topic>)>,
@@ -209,8 +209,10 @@ pub struct StableStorage {
 
 #[pre_upgrade]
 pub fn pre_upgrade() {
-    let api_keys = ic::get_mut::<ApiKeys>().archive();
-    let topics = ic::get_mut::<Topics>().archive();
+    // let api_keys = ic::get_mut::<ApiKeys>().archive();
+    let api_keys = ic::with_mut(|api_keys_repository: &mut ApiKeys| api_keys_repository.archive());
+    let topics = ic::with_mut(|topics_repository: &mut Topics| topics_repository.archive());
+    // let topics = ic::get_mut::<Topics>().archive();
 
     let stable_storage = StableStorage { api_keys, topics };
 
@@ -228,8 +230,14 @@ pub fn pre_upgrade() {
 #[post_upgrade]
 pub fn post_upgrade() {
     if let Ok((stable_storage,)) = ic::stable_restore::<(StableStorage,)>() {
-        ic::get_mut::<ApiKeys>().load(stable_storage.api_keys);
-        ic::get_mut::<Topics>().load(stable_storage.topics);
+        ic::with_mut(|topics_repository: &mut Topics| {
+            topics_repository.load(stable_storage.clone().topics)
+        });
+        ic::with_mut(|api_keys_repository: &mut ApiKeys| {
+            api_keys_repository.load(stable_storage.api_keys)
+        });
+        // ic::get_mut::<ApiKeys>().load(stable_storage.api_keys);
+        // ic::get_mut::<Topics>().load(stable_storage.topics);
     }
 }
 
