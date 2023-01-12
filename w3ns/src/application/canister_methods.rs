@@ -209,10 +209,8 @@ pub struct StableStorage {
 
 #[pre_upgrade]
 pub fn pre_upgrade() {
-    // let api_keys = ic::get_mut::<ApiKeys>().archive();
     let api_keys = ic::with_mut(|api_keys_repository: &mut ApiKeys| api_keys_repository.archive());
     let topics = ic::with_mut(|topics_repository: &mut Topics| topics_repository.archive());
-    // let topics = ic::get_mut::<Topics>().archive();
 
     let stable_storage = StableStorage { api_keys, topics };
 
@@ -236,8 +234,6 @@ pub fn post_upgrade() {
         ic::with_mut(|api_keys_repository: &mut ApiKeys| {
             api_keys_repository.load(stable_storage.api_keys)
         });
-        // ic::get_mut::<ApiKeys>().load(stable_storage.api_keys);
-        // ic::get_mut::<Topics>().load(stable_storage.topics);
     }
 }
 
