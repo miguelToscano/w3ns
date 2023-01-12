@@ -1,4 +1,5 @@
 type ApiError = variant {
+  InsufficientCyclesReceived;
   TopicNotFound;
   ApiKeyNotFound;
   ApiKeyAlreadyExists;
@@ -33,6 +34,7 @@ type UnsubscribeUserFromTopic = record {
 };
 service : {
   create_topic : (text) -> (Result);
+  cycles : () -> (nat64) query;
   delete_topic : (text) -> (Result);
   get_all : () -> (vec ApiKey) query;
   get_topics : () -> (vec Topic) query;
@@ -41,7 +43,7 @@ service : {
   register_key : (text) -> (Result);
   remove_key : () -> (Result);
   send_email : (SendEmailInput) -> (Result);
-  send_push_notification : (SendPushInput) -> (Result);
+  send_push : (SendPushInput) -> (Result);
   send_push_to_topic : (SendPushToTopicInput) -> (Result);
   send_sms : (SendSmsInput) -> (Result);
   subscribe_user_to_topic : (SubscribeUserToTopicInput) -> (Result);
