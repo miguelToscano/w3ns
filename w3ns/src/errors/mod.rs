@@ -10,4 +10,5 @@ pub enum ApiError {
     TopicAlreadyExists,
     TopicNotFound,
     SubscriberNotFound,
+    InsufficientCyclesReceived
 }

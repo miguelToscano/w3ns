@@ -16,6 +16,11 @@ use crate::domain::topics::services as topics_service;
 use crate::domain::topics::types::{SubscribeUserToTopicInput, Topic, UnsubscribeUserFromTopic};
 use crate::errors::ApiError;
 
+const SEND_EMAIL_FEE: u64 = 1_000; 
+const SEND_SMS_FEE: u64 = 1_000;
+const SEND_PUSH_FEE: u64 = 1_000;
+const SEND_PUSH_TO_TOPIC_FEE: u64 = 1_000;
+
 #[query]
 #[candid_method(query)]
 pub fn name() -> String {
@@ -37,6 +42,9 @@ pub fn register_key(key: String) -> Result<(), ApiError> {
 #[update]
 #[candid_method(update)]
 pub async fn send_email(input: SendEmailInput) -> Result<(), ApiError> {
+    let available_cycles = ic::msg_cycles_available();
+    ic::print(format!("Cycles availabe: {}", available_cycles));
+    
     let caller = ic::caller();
     let api_key = api_keys_service::validate_api_key(&caller)?;
     emails_service::send_courier_email(&api_key.value, &input).await
@@ -52,7 +60,7 @@ pub async fn send_sms(input: SendSmsInput) -> Result<(), ApiError> {
 
 #[update]
 #[candid_method(update)]
-pub async fn send_push_notification(input: SendPushInput) -> Result<(), ApiError> {
+pub async fn send_push(input: SendPushInput) -> Result<(), ApiError> {
     let caller = ic::caller();
     let api_key = api_keys_service::validate_api_key(&caller)?;
     push_service::send_courier_push(&api_key.value, &input).await
