@@ -16,10 +16,10 @@ use crate::domain::topics::services as topics_service;
 use crate::domain::topics::types::{SubscribeUserToTopicInput, Topic, UnsubscribeUserFromTopic};
 use crate::errors::ApiError;
 
-const SEND_EMAIL_FEE: u64 = 1_000;
-const SEND_SMS_FEE: u64 = 1_000;
-const SEND_PUSH_FEE: u64 = 1_000;
-const SEND_PUSH_TO_TOPIC_FEE: u64 = 1_000;
+const SEND_EMAIL_FEE: u64 = 4_000_000_000;
+const SEND_SMS_FEE: u64 = 4_000_000_000;
+const SEND_PUSH_FEE: u64 = 4_000_000_000;
+const SEND_PUSH_TO_TOPIC_FEE: u64 = 4_000_000_000;
 
 #[query]
 #[candid_method(query)]
