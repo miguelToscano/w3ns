@@ -1,8 +1,9 @@
-use candid::Principal;
+use candid::{CandidType, Principal};
 use ic_kit::candid::{candid_method, export_service};
 use ic_kit::ic;
 use ic_kit::macros::*;
 use ic_kit::*;
+use serde::Deserialize;
 
 use crate::domain::api_keys::services as api_keys_service;
 use crate::domain::api_keys::types::ApiKey;
@@ -15,6 +16,8 @@ use crate::domain::sms::types::SendSmsInput;
 use crate::domain::topics::services as topics_service;
 use crate::domain::topics::types::{SubscribeUserToTopicInput, Topic, UnsubscribeUserFromTopic};
 use crate::errors::ApiError;
+use crate::repositories::api_keys::ApiKeys;
+use crate::repositories::topics::Topics;
 
 const SEND_EMAIL_FEE: u64 = 4_000_000_000;
 const SEND_SMS_FEE: u64 = 4_000_000_000;
@@ -184,6 +187,38 @@ pub fn whoami() -> Principal {
 #[candid_method(query)]
 pub fn get_all() -> Vec<ApiKey> {
     api_keys_service::get_all()
+}
+
+#[derive(CandidType, Deserialize)]
+pub struct StableStorage {
+    api_keys: Vec<(Principal, ApiKey)>,
+    topics: Vec<(Principal, Vec<Topic>)>,
+}
+
+#[pre_upgrade]
+pub fn pre_upgrade() {
+    let api_keys = ic::get_mut::<ApiKeys>().archive();
+    let topics = ic::get_mut::<Topics>().archive();
+
+    let stable_storage = StableStorage { api_keys, topics };
+
+    match ic::stable_store((stable_storage,)) {
+        Ok(_) => (),
+        Err(candid_err) => {
+            ic::trap(&format!(
+                "An error occurred when saving to stable memory (pre_upgrade): {:?}",
+                candid_err
+            ));
+        }
+    };
+}
+
+#[post_upgrade]
+pub fn post_upgrade() {
+    if let Ok((stable_storage,)) = ic::stable_restore::<(StableStorage,)>() {
+        ic::get_mut::<ApiKeys>().load(stable_storage.api_keys);
+        ic::get_mut::<Topics>().load(stable_storage.topics);
+    }
 }
 
 #[query(name = "__get_candid_interface_tmp_hack")]
