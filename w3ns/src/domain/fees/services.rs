@@ -1,6 +1,6 @@
 use ic_kit::ic;
 
-use crate::domain::fees::types::{Fee};
+use crate::domain::fees::types::Fee;
 use crate::repositories::fees::Fees;
 
 pub fn get_all() -> Vec<Fee> {
