@@ -3,3 +3,4 @@ pub mod emails;
 pub mod push;
 pub mod sms;
 pub mod topics;
+pub mod fees;
