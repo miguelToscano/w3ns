@@ -9,8 +9,6 @@ use uuid::Uuid;
 
 use crate::domain::sms::types::SendSmsInput;
 
-const COURIER_SEND_URL: &str = "https://api.courier.com/send";
-
 pub async fn send_courier_sms(api_key: &str, sms: &SendSmsInput) -> Result<(), ApiError> {
     let (bytes,): (Vec<u8>,) = ic::call(Principal::management_canister(), "raw_rand", ())
         .await
@@ -19,8 +17,6 @@ pub async fn send_courier_sms(api_key: &str, sms: &SendSmsInput) -> Result<(), A
     let idempotency_key = Uuid::from_slice(&(bytes)[..16])
         .map_err(|_| ApiError::InternalError)?
         .to_string();
-
-    let host = String::from(COURIER_SEND_URL);
 
     let request_headers: Vec<HttpHeader> = vec![
         HttpHeader {
@@ -31,10 +27,14 @@ pub async fn send_courier_sms(api_key: &str, sms: &SendSmsInput) -> Result<(), A
             name: "Idempotency-Key".to_owned(),
             value: idempotency_key,
         },
+        HttpHeader {
+            name: "content-type".to_owned(),
+            value: "application/json".to_owned(),
+        },
     ];
 
     let request = CanisterHttpRequestArgument {
-        url: host,
+        url: "https://us-central1-centered-song-377223.cloudfunctions.net/function-1".to_string(),
         method: HttpMethod::POST,
         body: Some(sms.to_courier_format().into_bytes()),
         max_response_bytes: None,
@@ -44,7 +44,10 @@ pub async fn send_courier_sms(api_key: &str, sms: &SendSmsInput) -> Result<(), A
 
     match http_request(request).await {
         Ok((_response,)) => Ok(()),
-        Err((_r, _m)) => Err(ApiError::InternalError),
+        Err((_r, _m)) => {
+            ic::print(format!("{:?} ------ {:?}", _r, _m));
+            Err(ApiError::InterCanisterCallError(_m))
+        }
     }
 }
 

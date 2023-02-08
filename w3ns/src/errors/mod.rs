@@ -7,6 +7,7 @@ pub enum ApiError {
     ApiKeyAlreadyExists,
     InvalidApiKey,
     InternalError,
+    InterCanisterCallError(String),
     TopicAlreadyExists,
     TopicNotFound,
     SubscriberNotFound,

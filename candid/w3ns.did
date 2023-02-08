@@ -1,4 +1,5 @@
 type ApiError = variant {
+  InterCanisterCallError : text;
   InsufficientCyclesReceived : text;
   TopicNotFound;
   ApiKeyNotFound;
