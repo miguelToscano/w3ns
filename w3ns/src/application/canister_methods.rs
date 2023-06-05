@@ -8,21 +8,26 @@ use serde::Deserialize;
 use crate::domain::api_keys::services as api_keys_service;
 use crate::domain::api_keys::types::ApiKey;
 use crate::domain::emails::services as emails_service;
-use crate::domain::emails::types::SendEmailInput;
+use crate::domain::emails::types::{QueuedEmail, SendEmailInput};
 use crate::domain::push::services as push_service;
-use crate::domain::push::types::{SendPushInput, SendPushToTopicInput};
+use crate::domain::push::types::{SendPushInput, SendPushToTopicInput, QueuedPush};
 use crate::domain::sms::services as sms_service;
-use crate::domain::sms::types::SendSmsInput;
+use crate::domain::sms::types::{SendSmsInput, QueuedSms};
 use crate::domain::topics::services as topics_service;
 use crate::domain::topics::types::{SubscribeUserToTopicInput, Topic, UnsubscribeUserFromTopic};
 use crate::errors::ApiError;
 use crate::repositories::api_keys::ApiKeys;
+use crate::repositories::emails_queue::EmailsQueue;
 use crate::repositories::topics::Topics;
 
 const SEND_EMAIL_FEE: u64 = 4_000_000_000;
 const SEND_SMS_FEE: u64 = 4_000_000_000;
 const SEND_PUSH_FEE: u64 = 4_000_000_000;
 const SEND_PUSH_TO_TOPIC_FEE: u64 = 4_000_000_000;
+
+const ENQUEUE_EMAIL_FEE: u64 = 25_000_000;
+const ENQUEUE_SMS_FEE: u64 = 25_000_000;
+const ENQUEUE_PUSH_FEE: u64 = 25_000_000;
 
 #[query]
 #[candid_method(query)]
@@ -44,7 +49,7 @@ pub fn register_key(key: String) -> Result<(), ApiError> {
 
 #[update]
 #[candid_method(update)]
-pub async fn send_email(input: SendEmailInput) -> Result<(), ApiError> {
+pub async fn send_email(input: SendEmailInput) -> Result<u64, ApiError> {
     let available_cycles = ic::msg_cycles_available();
     ic::print(format!("Cycles availabe: {}", available_cycles));
 
@@ -54,18 +59,19 @@ pub async fn send_email(input: SendEmailInput) -> Result<(), ApiError> {
             SEND_EMAIL_FEE
         )));
     }
-
     let accepted_cycles = ic::msg_cycles_accept(SEND_EMAIL_FEE);
     ic::print(format!("Cycles accepted: {}", accepted_cycles));
-
+    let start_cycles = ic::balance();
     let caller = ic::caller();
     let api_key = api_keys_service::validate_api_key(&caller)?;
-    emails_service::send_courier_email(&api_key.value, &input).await
+    emails_service::send_courier_email(&api_key.value, &input).await?;
+    let end_cycles = ic::balance();
+    return Ok(start_cycles - end_cycles);
 }
 
 #[update]
 #[candid_method(update)]
-pub async fn send_sms(input: SendSmsInput) -> Result<(), ApiError> {
+pub async fn send_sms(input: SendSmsInput) -> Result<u64, ApiError> {
     let available_cycles = ic::msg_cycles_available();
     ic::print(format!("Cycles availabe: {}", available_cycles));
 
@@ -78,15 +84,17 @@ pub async fn send_sms(input: SendSmsInput) -> Result<(), ApiError> {
 
     let accepted_cycles = ic::msg_cycles_accept(SEND_SMS_FEE);
     ic::print(format!("Cycles accepted: {}", accepted_cycles));
-
+    let start_cycles = ic::balance();
     let caller = ic::caller();
     let api_key = api_keys_service::validate_api_key(&caller)?;
-    sms_service::send_courier_sms(&api_key.value, &input).await
+    sms_service::send_courier_sms(&api_key.value, &input).await?;
+    let end_cycles = ic::balance();
+    return Ok(start_cycles - end_cycles);
 }
 
 #[update]
 #[candid_method(update)]
-pub async fn send_push(input: SendPushInput) -> Result<(), ApiError> {
+pub async fn send_push(input: SendPushInput) -> Result<u64, ApiError> {
     let available_cycles = ic::msg_cycles_available();
     ic::print(format!("Cycles availabe: {}", available_cycles));
 
@@ -99,10 +107,12 @@ pub async fn send_push(input: SendPushInput) -> Result<(), ApiError> {
 
     let accepted_cycles = ic::msg_cycles_accept(SEND_PUSH_FEE);
     ic::print(format!("Cycles accepted: {}", accepted_cycles));
-
+    let start_cycles = ic::balance();
     let caller = ic::caller();
     let api_key = api_keys_service::validate_api_key(&caller)?;
-    push_service::send_courier_push(&api_key.value, &input).await
+    push_service::send_courier_push(&api_key.value, &input).await?;
+    let end_cycles = ic::balance();
+    return Ok(start_cycles - end_cycles);
 }
 
 #[query]
@@ -140,7 +150,7 @@ pub fn cycles() -> u64 {
 
 #[update]
 #[candid_method(update)]
-pub async fn send_push_to_topic(input: SendPushToTopicInput) -> Result<(), ApiError> {
+pub async fn send_push_to_topic(input: SendPushToTopicInput) -> Result<u64, ApiError> {
     let available_cycles = ic::msg_cycles_available();
     ic::print(format!("Cycles availabe: {}", available_cycles));
 
@@ -153,11 +163,13 @@ pub async fn send_push_to_topic(input: SendPushToTopicInput) -> Result<(), ApiEr
 
     let accepted_cycles = ic::msg_cycles_accept(SEND_PUSH_TO_TOPIC_FEE);
     ic::print(format!("Cycles accepted: {}", accepted_cycles));
-
+    let start_cycles = ic::balance();
     let caller = ic::caller();
     let api_key = api_keys_service::validate_api_key(&caller)?;
     let topic = topics_service::get_topic(&caller, input.clone().topic)?;
-    push_service::send_courier_topic_push(&api_key.value, &input, topic.subscribers).await
+    push_service::send_courier_topic_push(&api_key.value, &input, topic.subscribers).await?;
+    let end_cycles = ic::balance();
+    return Ok(start_cycles - end_cycles);
 }
 
 #[update]
@@ -201,18 +213,120 @@ pub fn get_all() -> Vec<ApiKey> {
     api_keys_service::get_all()
 }
 
+#[query]
+#[candid_method(query)]
+pub fn get_queued_email_notifications() -> Vec<QueuedEmail> {
+    let queued_emails = emails_service::get_queued_emails();
+    return queued_emails;
+}
+
+#[query]
+#[candid_method(query)]
+pub fn get_queued_sms_notifications() -> Vec<QueuedSms> {
+    let queued_sms = sms_service::get_queued_sms();
+    return queued_sms;
+}
+
+#[update]
+#[candid_method(update)]
+pub fn enqueue_email_notification(input: SendEmailInput) -> Result<(), ApiError> {
+    let caller = ic::caller();
+    let api_key = api_keys_service::validate_api_key(&caller)?;
+    let available_cycles = ic::msg_cycles_available();
+    ic::print(format!("Cycles availabe: {}", available_cycles));
+
+    if available_cycles < ENQUEUE_EMAIL_FEE {
+        return Err(ApiError::InsufficientCyclesReceived(format!(
+            "Required cycles: {}",
+            ENQUEUE_EMAIL_FEE
+        )));
+    }
+    ic::msg_cycles_accept(ENQUEUE_EMAIL_FEE);
+    emails_service::queue_email(&api_key.value, &input)?;
+    return Ok(());
+}
+
+#[update]
+#[candid_method(update)]
+pub fn enqueue_sms_notification(input: SendSmsInput) -> Result<(), ApiError> {
+    let caller = ic::caller();
+    let api_key = api_keys_service::validate_api_key(&caller)?;
+    let available_cycles = ic::msg_cycles_available();
+    ic::print(format!("Cycles availabe: {}", available_cycles));
+
+    if available_cycles < ENQUEUE_SMS_FEE {
+        return Err(ApiError::InsufficientCyclesReceived(format!(
+            "Required cycles: {}",
+            ENQUEUE_SMS_FEE
+        )));
+    }
+    ic::msg_cycles_accept(ENQUEUE_SMS_FEE);
+    sms_service::queue_sms(&api_key.value, &input)?;
+    return Ok(());
+}
+
+#[update]
+#[candid_method(update)]
+pub fn dequeue_email_notifications() -> Vec<QueuedEmail> {
+    let queued_emails = emails_service::dequeue_emails();
+    return queued_emails;
+}
+
+#[update]
+#[candid_method(update)]
+pub fn dequeue_sms_notifications() -> Vec<QueuedSms> {
+    let queued_sms = sms_service::dequeue_sms();
+    return queued_sms;
+}
+
+#[update]
+#[candid_method(update)]
+pub fn enqueue_push_notification(input: SendPushInput) -> Result<(), ApiError> {
+    let caller = ic::caller();
+    let api_key = api_keys_service::validate_api_key(&caller)?;
+    let available_cycles = ic::msg_cycles_available();
+    ic::print(format!("Cycles availabe: {}", available_cycles));
+
+    if available_cycles < ENQUEUE_PUSH_FEE {
+        return Err(ApiError::InsufficientCyclesReceived(format!(
+            "Required cycles: {}",
+            ENQUEUE_PUSH_FEE
+        )));
+    }
+    ic::msg_cycles_accept(ENQUEUE_PUSH_FEE);
+    push_service::queue_push(&api_key.value, &input)?;
+    return Ok(());
+}
+
+#[query]
+#[candid_method(query)]
+pub fn get_queued_push_notifications() -> Vec<QueuedPush> {
+    let queued_push = push_service::get_queued_push();
+    return queued_push;
+}
+
+
+#[update]
+#[candid_method(update)]
+pub fn dequeue_push_notifications() -> Vec<QueuedPush> {
+    let queued_push = push_service::dequeue_push();
+    return queued_push;
+}
+
 #[derive(CandidType, Deserialize, Clone)]
 pub struct StableStorage {
     api_keys: Vec<(Principal, ApiKey)>,
     topics: Vec<(Principal, Vec<Topic>)>,
+    emails_queue: Vec<QueuedEmail>,
 }
 
 #[pre_upgrade]
 pub fn pre_upgrade() {
     let api_keys = ic::with_mut(|api_keys_repository: &mut ApiKeys| api_keys_repository.archive());
     let topics = ic::with_mut(|topics_repository: &mut Topics| topics_repository.archive());
+    let emails_queue = ic::with_mut(|emails_queue: &mut EmailsQueue| emails_queue.archive());
 
-    let stable_storage = StableStorage { api_keys, topics };
+    let stable_storage = StableStorage { api_keys, topics, emails_queue };
 
     match ic::stable_store((stable_storage,)) {
         Ok(_) => (),
@@ -232,7 +346,10 @@ pub fn post_upgrade() {
             topics_repository.load(stable_storage.clone().topics)
         });
         ic::with_mut(|api_keys_repository: &mut ApiKeys| {
-            api_keys_repository.load(stable_storage.api_keys)
+            api_keys_repository.load(stable_storage.clone().api_keys)
+        });
+        ic::with_mut(|emails_queue: &mut EmailsQueue| {
+            emails_queue.load(stable_storage.clone().emails_queue)
         });
     }
 }

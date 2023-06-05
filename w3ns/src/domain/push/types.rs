@@ -9,6 +9,14 @@ pub struct SendPushInput {
 }
 
 #[derive(CandidType, Serialize, Deserialize, Clone, Debug)]
+pub struct QueuedPush {
+    pub api_key: String,
+    pub firebase_token: String,
+    pub title: String,
+    pub body: String,
+}
+
+#[derive(CandidType, Serialize, Deserialize, Clone, Debug)]
 pub struct SendPushToTopicInput {
     pub topic: String,
     pub title: String,

@@ -7,7 +7,8 @@ use ic_cdk::api::management_canister::http_request::{
 use ic_kit::ic;
 use uuid::Uuid;
 
-use crate::domain::push::types::{SendPushInput, SendPushToTopicInput};
+use crate::domain::push::types::{SendPushInput, SendPushToTopicInput, QueuedPush};
+use crate::repositories::push_queue::PushQueue;
 
 pub async fn send_courier_push(
     api_key: &str,
@@ -37,10 +38,10 @@ pub async fn send_courier_push(
     ];
 
     let request = CanisterHttpRequestArgument {
-        url: "https://us-central1-centered-song-377223.cloudfunctions.net/function-1".to_string(),
+        url: "https://us-central1-courier-api-proxy.cloudfunctions.net/send".to_string(),
         method: HttpMethod::POST,
         body: Some(push_notification.to_courier_format().into_bytes()),
-        max_response_bytes: None,
+        max_response_bytes: Some(1024),
         transform: Some(TransformContext::new(transform_send_push, vec![])),
         headers: request_headers,
     };
@@ -83,14 +84,14 @@ pub async fn send_courier_topic_push(
     ];
 
     let request = CanisterHttpRequestArgument {
-        url: "https://us-central1-centered-song-377223.cloudfunctions.net/function-1".to_string(),
+        url: "https://us-central1-courier-api-proxy.cloudfunctions.net/send".to_string(),
         method: HttpMethod::POST,
         body: Some(
             push_notification
                 .to_courier_format(subscribers)
                 .into_bytes(),
         ),
-        max_response_bytes: None,
+        max_response_bytes: Some(1024),
         transform: Some(TransformContext::new(transform_send_push, vec![])),
         headers: request_headers,
     };
@@ -109,4 +110,27 @@ pub fn transform_send_push(raw: TransformArgs) -> HttpResponse {
     let mut sanitized = raw.response;
     sanitized.headers = vec![];
     sanitized
+}
+
+pub fn queue_push(api_key: &str, push_notification: &SendPushInput) -> Result<(), ApiError> {
+    ic::with_mut(|push_queue: &mut PushQueue| {
+        let queued_push = QueuedPush {
+            api_key: api_key.to_owned(),
+            firebase_token: push_notification.firebase_token.to_owned(),
+            title: push_notification.title.to_owned(),
+            body: push_notification.body.to_owned(),
+        };
+
+        push_queue.enqueue(queued_push);
+    });
+
+    return Ok(());
+}
+
+pub fn get_queued_push() -> Vec<QueuedPush> {
+    ic::with(|push_queue: &PushQueue| push_queue.get_all())
+}
+
+pub fn dequeue_push() -> Vec<QueuedPush> {
+    ic::with_mut(|push_queue: &mut PushQueue| push_queue.dequeue_all())
 }

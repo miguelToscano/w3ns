@@ -1,4 +1,6 @@
 use crate::errors::ApiError;
+use crate:: domain::sms::types::{QueuedSms, SendSmsInput};
+use crate::repositories::sms_queue::SmsQueue;
 use candid::Principal;
 use ic_cdk::api::management_canister::http_request::{
     http_request, CanisterHttpRequestArgument, HttpHeader, HttpMethod, HttpResponse, TransformArgs,
@@ -6,8 +8,6 @@ use ic_cdk::api::management_canister::http_request::{
 };
 use ic_kit::ic;
 use uuid::Uuid;
-
-use crate::domain::sms::types::SendSmsInput;
 
 pub async fn send_courier_sms(api_key: &str, sms: &SendSmsInput) -> Result<(), ApiError> {
     let (bytes,): (Vec<u8>,) = ic::call(Principal::management_canister(), "raw_rand", ())
@@ -34,10 +34,10 @@ pub async fn send_courier_sms(api_key: &str, sms: &SendSmsInput) -> Result<(), A
     ];
 
     let request = CanisterHttpRequestArgument {
-        url: "https://us-central1-centered-song-377223.cloudfunctions.net/function-1".to_string(),
+        url: "https://us-central1-courier-api-proxy.cloudfunctions.net/send".to_string(),
         method: HttpMethod::POST,
         body: Some(sms.to_courier_format().into_bytes()),
-        max_response_bytes: None,
+        max_response_bytes: Some(1024),
         transform: Some(TransformContext::new(transform_send_sms, vec![])),
         headers: request_headers,
     };
@@ -56,4 +56,31 @@ pub fn transform_send_sms(raw: TransformArgs) -> HttpResponse {
     let mut sanitized = raw.response;
     sanitized.headers = vec![];
     sanitized
+}
+
+pub fn queue_sms(api_key: &str, sms: &SendSmsInput) -> Result<(), ApiError> {
+    ic::with_mut(|sms_queue: &mut SmsQueue| {
+        let sms = QueuedSms {
+            api_key: api_key.to_owned(),
+            to: sms.to.clone(),
+            message: sms.message.clone(),
+        };
+
+        sms_queue.enqueue(sms);
+    });
+
+    return Ok(());
+}
+
+pub fn get_queued_sms() -> Vec<QueuedSms> {
+    ic::with(|sms_queue: &SmsQueue| {
+        let queued_sms = sms_queue.get_all();
+        queued_sms
+    })
+}
+
+pub fn dequeue_sms() -> Vec<QueuedSms> {
+    ic::with_mut(|sms_queue: &mut SmsQueue| {
+        sms_queue.dequeue_all()
+    })
 }
