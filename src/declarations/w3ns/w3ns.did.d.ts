@@ -74,6 +74,11 @@ export interface _SERVICE {
   'dequeue_push_notifications' : ActorMethod<[], Array<QueuedPush>>,
   'dequeue_sms_notifications' : ActorMethod<[], Array<QueuedSms>>,
   'enqueue_email_notification' : ActorMethod<[SendEmailInput], Result>,
+  'enqueue_eth_email_notification' : ActorMethod<
+    [string, SendEmailInput],
+    Result
+  >,
+  'enqueue_eth_sms_notification' : ActorMethod<[string, SendSmsInput], Result>,
   'enqueue_push_notification' : ActorMethod<[SendPushInput], Result>,
   'enqueue_sms_notification' : ActorMethod<[SendSmsInput], Result>,
   'get_all' : ActorMethod<[], Array<ApiKey>>,
@@ -83,6 +88,7 @@ export interface _SERVICE {
   'get_topics' : ActorMethod<[], Array<Topic>>,
   'has_key_registered' : ActorMethod<[], boolean>,
   'name' : ActorMethod<[], string>,
+  'register_eth_key' : ActorMethod<[string, string], Result>,
   'register_key' : ActorMethod<[string], Result>,
   'remove_key' : ActorMethod<[], Result>,
   'send_email' : ActorMethod<[SendEmailInput], Result_1>,

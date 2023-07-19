@@ -33,12 +33,12 @@ export const idlFactory = ({ IDL }) => {
     'title' : IDL.Text,
     'body' : IDL.Text,
   });
+  const SendSmsInput = IDL.Record({ 'to' : IDL.Text, 'message' : IDL.Text });
   const SendPushInput = IDL.Record({
     'title' : IDL.Text,
     'body' : IDL.Text,
     'firebase_token' : IDL.Text,
   });
-  const SendSmsInput = IDL.Record({ 'to' : IDL.Text, 'message' : IDL.Text });
   const ApiKey = IDL.Record({
     'value' : IDL.Text,
     'owner' : IDL.Principal,
@@ -72,6 +72,16 @@ export const idlFactory = ({ IDL }) => {
     'dequeue_push_notifications' : IDL.Func([], [IDL.Vec(QueuedPush)], []),
     'dequeue_sms_notifications' : IDL.Func([], [IDL.Vec(QueuedSms)], []),
     'enqueue_email_notification' : IDL.Func([SendEmailInput], [Result], []),
+    'enqueue_eth_email_notification' : IDL.Func(
+        [IDL.Text, SendEmailInput],
+        [Result],
+        [],
+      ),
+    'enqueue_eth_sms_notification' : IDL.Func(
+        [IDL.Text, SendSmsInput],
+        [Result],
+        [],
+      ),
     'enqueue_push_notification' : IDL.Func([SendPushInput], [Result], []),
     'enqueue_sms_notification' : IDL.Func([SendSmsInput], [Result], []),
     'get_all' : IDL.Func([], [IDL.Vec(ApiKey)], ['query']),
@@ -93,6 +103,7 @@ export const idlFactory = ({ IDL }) => {
     'get_topics' : IDL.Func([], [IDL.Vec(Topic)], ['query']),
     'has_key_registered' : IDL.Func([], [IDL.Bool], ['query']),
     'name' : IDL.Func([], [IDL.Text], ['query']),
+    'register_eth_key' : IDL.Func([IDL.Text, IDL.Text], [Result], []),
     'register_key' : IDL.Func([IDL.Text], [Result], []),
     'remove_key' : IDL.Func([], [Result], []),
     'send_email' : IDL.Func([SendEmailInput], [Result_1], []),

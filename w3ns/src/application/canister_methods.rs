@@ -6,7 +6,7 @@ use ic_kit::*;
 use serde::Deserialize;
 
 use crate::domain::api_keys::services as api_keys_service;
-use crate::domain::api_keys::types::ApiKey;
+use crate::domain::api_keys::types::{ApiKey, EthApiKey};
 use crate::domain::emails::services as emails_service;
 use crate::domain::emails::types::{QueuedEmail, SendEmailInput};
 use crate::domain::push::services as push_service;
@@ -18,6 +18,7 @@ use crate::domain::topics::types::{SubscribeUserToTopicInput, Topic, Unsubscribe
 use crate::errors::ApiError;
 use crate::repositories::api_keys::ApiKeys;
 use crate::repositories::emails_queue::EmailsQueue;
+use crate::repositories::eth_api_keys::EthApiKeys;
 use crate::repositories::topics::Topics;
 
 const SEND_EMAIL_FEE: u64 = 4_000_000_000;
@@ -45,6 +46,17 @@ pub fn register_key(key: String) -> Result<(), ApiError> {
         created_at: ic::time(),
     };
     api_keys_service::register(&api_key)
+}
+
+#[update]
+#[candid_method(update)]
+pub fn register_eth_key(caller: String, api_key: String) -> Result<(), ApiError> {
+    let eth_api_key = EthApiKey {
+        value: api_key,
+        owner: caller,
+        created_at: ic::time(),
+    };
+    api_keys_service::register_eth(&eth_api_key)
 }
 
 #[update]
@@ -194,6 +206,13 @@ pub fn remove_key() -> Result<(), ApiError> {
     api_keys_service::delete(&caller)
 }
 
+#[update]
+#[candid_method(update)]
+pub fn remove_eth_key(caller: String) -> Result<(), ApiError> {
+    api_keys_service::validate_eth_api_key(&caller)?;
+    api_keys_service::delete_eth(&caller)
+}
+
 #[query]
 #[candid_method(query)]
 pub fn has_key_registered() -> bool {
@@ -248,6 +267,14 @@ pub fn enqueue_email_notification(input: SendEmailInput) -> Result<(), ApiError>
 
 #[update]
 #[candid_method(update)]
+pub fn enqueue_eth_email_notification(caller: String, input: SendEmailInput) -> Result<(), ApiError> {
+    let api_key = api_keys_service::validate_eth_api_key(&caller)?;
+    emails_service::queue_email(&api_key.value, &input)?;
+    return Ok(());
+}
+
+#[update]
+#[candid_method(update)]
 pub fn enqueue_sms_notification(input: SendSmsInput) -> Result<(), ApiError> {
     let caller = ic::caller();
     let api_key = api_keys_service::validate_api_key(&caller)?;
@@ -261,6 +288,14 @@ pub fn enqueue_sms_notification(input: SendSmsInput) -> Result<(), ApiError> {
         )));
     }
     ic::msg_cycles_accept(ENQUEUE_SMS_FEE);
+    sms_service::queue_sms(&api_key.value, &input)?;
+    return Ok(());
+}
+
+#[update]
+#[candid_method(update)]
+pub fn enqueue_eth_sms_notification(caller: String, input: SendSmsInput) -> Result<(), ApiError> {
+    let api_key = api_keys_service::validate_eth_api_key(&caller)?;
     sms_service::queue_sms(&api_key.value, &input)?;
     return Ok(());
 }
@@ -316,6 +351,7 @@ pub fn dequeue_push_notifications() -> Vec<QueuedPush> {
 #[derive(CandidType, Deserialize, Clone)]
 pub struct StableStorage {
     api_keys: Vec<(Principal, ApiKey)>,
+    eth_api_keys: Vec<(String, EthApiKey)>,
     topics: Vec<(Principal, Vec<Topic>)>,
     emails_queue: Vec<QueuedEmail>,
 }
@@ -323,10 +359,11 @@ pub struct StableStorage {
 #[pre_upgrade]
 pub fn pre_upgrade() {
     let api_keys = ic::with_mut(|api_keys_repository: &mut ApiKeys| api_keys_repository.archive());
+    let eth_api_keys = ic::with_mut(|eth_api_keys_repository: &mut EthApiKeys| eth_api_keys_repository.archive());
     let topics = ic::with_mut(|topics_repository: &mut Topics| topics_repository.archive());
     let emails_queue = ic::with_mut(|emails_queue: &mut EmailsQueue| emails_queue.archive());
 
-    let stable_storage = StableStorage { api_keys, topics, emails_queue };
+    let stable_storage = StableStorage { api_keys, eth_api_keys, topics, emails_queue };
 
     match ic::stable_store((stable_storage,)) {
         Ok(_) => (),
@@ -347,6 +384,9 @@ pub fn post_upgrade() {
         });
         ic::with_mut(|api_keys_repository: &mut ApiKeys| {
             api_keys_repository.load(stable_storage.clone().api_keys)
+        });
+        ic::with_mut(|eth_api_keys_repository: &mut EthApiKeys| {
+            eth_api_keys_repository.load(stable_storage.clone().eth_api_keys)
         });
         ic::with_mut(|emails_queue: &mut EmailsQueue| {
             emails_queue.load(stable_storage.clone().emails_queue)

@@ -7,3 +7,10 @@ pub struct ApiKey {
     pub owner: Principal,
     pub created_at: u64,
 }
+
+#[derive(CandidType, Serialize, Deserialize, Clone, Debug)]
+pub struct EthApiKey {
+    pub value: String,
+    pub owner: String,
+    pub created_at: u64,
+}

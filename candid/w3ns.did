@@ -55,6 +55,8 @@ service : {
   dequeue_push_notifications : () -> (vec QueuedPush);
   dequeue_sms_notifications : () -> (vec QueuedSms);
   enqueue_email_notification : (SendEmailInput) -> (Result);
+  enqueue_eth_email_notification : (text, SendEmailInput) -> (Result);
+  enqueue_eth_sms_notification : (text, SendSmsInput) -> (Result);
   enqueue_push_notification : (SendPushInput) -> (Result);
   enqueue_sms_notification : (SendSmsInput) -> (Result);
   get_all : () -> (vec ApiKey) query;
@@ -64,7 +66,9 @@ service : {
   get_topics : () -> (vec Topic) query;
   has_key_registered : () -> (bool) query;
   name : () -> (text) query;
+  register_eth_key : (text, text) -> (Result);
   register_key : (text) -> (Result);
+  remove_eth_key : (text) -> (Result);
   remove_key : () -> (Result);
   send_email : (SendEmailInput) -> (Result_1);
   send_push : (SendPushInput) -> (Result_1);
